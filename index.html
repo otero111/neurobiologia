@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Web de Neuro - Aplicación Educativa</title>
+   <style>
+       /* --- Estilos Generales y Tema Oscuro Replicado --- */
+       :root {
+           --color-fondo: #121212;
+           --color-superficie: #1e1e1e;
+           --color-borde: #333;
+           --texto-principal: #e0e0e0;
+           --texto-secundario: #a0a0a0;
+           --color-acento: #03dac6; /* Cyan verdoso */
+           --color-primario-original: #6a5acd; /* Púrpura para elementos específicos de Neuro */
+           --color-correcto: #4caf50; /* Verde */
+           --color-incorrecto: #cf6679; /* Rojo suave */
+       }
+
+       * {
+           box-sizing: border-box;
+           margin: 0;
+           padding: 0;
+       }
+
+       body {
+           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+           background-color: var(--color-fondo);
+           color: var(--texto-principal);
+           display: flex;
+           justify-content: center;
+           align-items: flex-start;
+           min-height: 100vh;
+           padding: 20px;
+           overflow-y: auto;
+       }
+
+       /* --- Contenedor Principal --- */
+       .quiz-container {
+           background-color: var(--color-superficie);
+           border-radius: 15px;
+           box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+           width: 100%;
+           max-width: 800px;
+           overflow: hidden;
+           border: 1px solid var(--color-borde);
+           margin-top: 20px;
+           margin-bottom: 20px;
+       }
+
+       .pantalla {
+           padding: 30px 40px;
+           transition: opacity 0.5s;
+       }
+
+       /* --- Pantalla de Inicio --- */
+       #pantalla-inicio h1 {
+           color: var(--color-acento);
+           text-align: center;
+           margin-bottom: 15px;
+           font-size: 2.2rem;
+           font-weight: 700;
+       }
+
+       #pantalla-inicio p {
+           text-align: center;
+           color: var(--texto-secundario);
+           margin-bottom: 30px;
+           font-size: 1.1rem;
+       }
+
+       .seleccion-modulos {
+           margin-bottom: 30px;
+       }
+
+       .seleccion-modulos h2 {
+           text-align: center;
+           margin-bottom: 20px;
+           font-weight: 500;
+       }
+
+       .lista-modulos {
+           list-style: none;
+           display: grid;
+           gap: 15px;
+       }
+
+       .modulo-item {
+           background-color: var(--color-fondo);
+           border: 1px solid var(--color-borde);
+           border-radius: 8px;
+           display: flex;
+           align-items: center;
+           padding: 10px 15px;
+           cursor: pointer;
+           transition: background-color 0.3s, border-color 0.3s;
+           user-select: none;
+       }
+       .modulo-item:hover {
+           background-color: #2a2a2a;
+       }
+       .modulo-item.seleccionado {
+           background-color: var(--color-acento);
+           border-color: var(--color-acento);
+           color: var(--color-fondo);
+       }
+       .modulo-item.seleccionado .modulo-numero {
+           background-color: var(--color-fondo);
+           color: var(--color-acento);
+       }
+       .modulo-item.seleccionado .boton-estudiar {
+            color: var(--color-fondo);
+            border-color: var(--color-fondo);
+       }
+       .modulo-item.seleccionado .boton-estudiar:hover {
+            background-color: var(--color-fondo);
+            color: var(--color-acento);
+       }
+
+       .modulo-numero {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--color-primario-original);
+            color: white;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            font-weight: 600;
+            flex-shrink: 0;
+            transition: background-color 0.3s, color 0.3s;
+       }
+       .modulo-texto {
+           margin-left: 15px;
+           flex-grow: 1;
+       }
+       .boton-estudiar {
+           background: none;
+           border: 1px solid var(--color-primario-original);
+           color: var(--color-primario-original);
+           border-radius: 20px;
+           padding: 8px 12px;
+           cursor: pointer;
+           margin-left: 15px;
+           font-size: 0.9rem;
+           font-weight: bold;
+           transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+           flex-shrink: 0;
+       }
+       .boton-estudiar:hover {
+           background-color: var(--color-primario-original);
+           color: white;
+       }
+
+       /* --- Botones --- */
+       .btn {
+           display: block;
+           width: 100%;
+           padding: 15px;
+           font-size: 1.2rem;
+           font-weight: bold;
+           color: var(--color-fondo);
+           background-color: var(--color-acento);
+           border: none;
+           border-radius: 8px;
+           cursor: pointer;
+           transition: transform 0.2s, box-shadow 0.2s;
+           margin-top: 20px;
+       }
+       .btn:hover:not(:disabled) {
+           transform: translateY(-2px);
+           box-shadow: 0 4px 15px rgba(3, 218, 198, 0.2);
+       }
+       .btn:disabled {
+           background-color: #555;
+           cursor: not-allowed;
+           color: #888;
+       }
+
+       /* --- Pantalla del Quiz --- */
+       #pantalla-quiz { display: none; }
+       .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; color: var(--texto-secundario); font-weight: bold; flex-wrap: wrap; gap: 10px; }
+       .pregunta-wrapper { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 30px; }
+       #texto-pregunta { font-size: 1.4rem; line-height: 1.6; text-align: center; min-height: 100px; flex-grow: 1; }
+       #btn-leer-pregunta { background: none; border: 1px solid var(--color-borde); border-radius: 50%; width: 44px; height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.3s, border-color 0.3s; padding: 0; flex-shrink: 0; }
+       #btn-leer-pregunta:hover { background-color: #2a2a2a; }
+       #btn-leer-pregunta.activo { border-color: var(--color-acento); }
+       #btn-leer-pregunta svg { width: 22px; height: 22px; fill: var(--texto-secundario); transition: fill 0.3s; }
+       #btn-leer-pregunta.activo svg { fill: var(--color-acento); }
+       .opciones-respuesta { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+       .opciones-respuesta .btn { background-color: #333; color: var(--texto-principal); }
+       .opciones-respuesta .btn:hover:not(:disabled) { background-color: #444; }
+       .opciones-respuesta .btn.correcto { background-color: var(--color-correcto); color: white; }
+       .opciones-respuesta .btn.incorrecto { background-color: var(--color-incorrecto); color: white; }
+       #feedback { margin-top: 30px; padding: 20px; border-radius: 8px; text-align: center; min-height: 150px; border: 1px solid transparent; }
+       #feedback.correcto { border-color: var(--color-correcto); }
+       #feedback.incorrecto { border-color: var(--color-incorrecto); }
+       #feedback h3 { margin-bottom: 10px; }
+       #feedback .justificacion { margin-top: 10px; color: var(--texto-secundario); font-style: italic; }
+       #btn-siguiente { background-color: var(--color-borde); color: var(--texto-principal); font-size: 1rem; padding: 12px; width: auto; min-width: 180px; margin-left: auto; margin-right: auto; }
+
+       /* --- Pantalla Final --- */
+       #pantalla-final { display: none; text-align: center; }
+       #pantalla-final h2 { font-size: 2.2rem; margin-bottom: 20px; color: var(--color-acento); }
+       #mensaje-final { font-size: 1.5rem; margin-bottom: 15px; }
+       #puntuacion-final-texto { font-size: 1.2rem; color: var(--texto-secundario); margin-bottom: 30px; }
+       #btn-reiniciar { background-color: #333; color: var(--texto-principal); }
+
+       /* --- Modal de Resumen --- */
+        #modal-resumen { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+        .modal-contenido { background-color: var(--color-superficie); margin: auto; padding: 30px; border: 1px solid var(--color-borde); width: 90%; max-width: 700px; border-radius: 15px; position: relative; }
+        .cerrar-modal { color: #aaa; position: absolute; top: 10px; right: 20px; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .cerrar-modal:hover, .cerrar-modal:focus { color: white; }
+        #resumen-titulo { margin-top: 0; margin-bottom: 20px; color: var(--color-acento); }
+        #resumen-texto { max-height: 40vh; overflow-y: auto; margin-bottom: 20px; color: var(--texto-secundario); }
+        #controles-tts { display: flex; align-items: center; gap: 15px; }
+        .btn-tts { background: none; border: 1px solid var(--color-borde); color: var(--texto-secundario); border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: background-color 0.3s, color 0.3s; }
+        .btn-tts:hover { background-color: #2a2a2a; }
+        .btn-tts svg { fill: currentColor; width: 20px; height: 20px; }
+        #tts-progreso { width: 100%; flex-grow: 1; -webkit-appearance: none; appearance: none; height: 8px; }
+        #tts-progreso::-webkit-progress-bar { background-color: var(--color-fondo); border-radius: 4px; }
+        #tts-progreso::-webkit-progress-value { background-color: var(--color-acento); border-radius: 4px; transition: width 0.1s linear; }
+
+       /* --- Responsividad --- */
+       @media (max-width: 600px) {
+           body { padding: 10px; }
+           .pantalla { padding: 20px; }
+           #pantalla-inicio h1, #pantalla-final h2 { font-size: 1.8rem; }
+           .opciones-respuesta { grid-template-columns: 1fr; }
+           .modulo-item { flex-direction: column; align-items: flex-start; padding: 15px; }
+           .modulo-item > div { width: 100%; }
+           .boton-estudiar { margin-left: 0; margin-top: 10px; width: 100%; text-align: center;}
+       }
+   </style>
+</head>
+<body>
+
+   <div class="quiz-container">
+       
+       <div id="pantalla-inicio" class="pantalla">
+           <h1>Web de Neuro</h1>
+           <p>Selecciona los módulos, estudia el resumen o pon a prueba tu conocimiento.</p>
+           
+           <div class="seleccion-modulos">
+               <h2>Elige los módulos para el quiz:</h2>
+               <ul class="lista-modulos" id="lista-modulos-seleccion">
+                   <!-- Se generará con JS -->
+               </ul>
+           </div>
+
+           <button id="btn-iniciar" class="btn">Iniciar Quiz</button>
+           <p id="error-seleccion" style="color: var(--color-incorrecto); text-align: center; margin-top: 15px; display: none;">Por favor, selecciona al menos un módulo.</p>
+       </div>
+
+       <div id="pantalla-quiz" class="pantalla">
+           <div class="quiz-header">
+               <span id="contador-pregunta">Pregunta X de Y</span>
+               <span id="puntuacion-actual">Puntuación: 0</span>
+           </div>
+           <div class="pregunta-wrapper">
+               <p id="texto-pregunta">Aquí va la pregunta...</p>
+               <button id="btn-leer-pregunta" title="Activar/Desactivar lectura en voz alta">
+                   <span id="icono-volumen-on">
+                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path></svg>
+                   </span>
+                   <span id="icono-volumen-off" style="display: none;">
+                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"></path></svg>
+                   </span>
+               </button>
+           </div>
+           <div class="opciones-respuesta">
+               <button id="btn-verdadero" class="btn">Verdadero</button>
+               <button id="btn-falso" class="btn">Falso</button>
+           </div>
+           <div id="feedback"></div>
+       </div>
+
+       <div id="pantalla-final" class="pantalla">
+           <h2>Fin del Juego</h2>
+           <p id="mensaje-final">¡Excelente!</p>
+           <p id="puntuacion-final-texto">Tu puntuación final es: X / Y</p>
+           <button id="btn-reiniciar" class="btn">Jugar de Nuevo</button>
+       </div>
+   </div>
+   
+    <!-- Modal para Resúmenes -->
+    <div id="modal-resumen">
+        <div class="modal-contenido">
+            <span class="cerrar-modal">&times;</span>
+            <h2 id="resumen-titulo">Título del Resumen</h2>
+            <div id="resumen-texto">
+                <p>Contenido del resumen...</p>
+            </div>
+            <div id="controles-tts">
+                <button class="btn-tts" id="tts-play" title="Reproducir">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+                </button>
+                <button class="btn-tts" id="tts-pause" title="Pausar">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+                </button>
+                <button class="btn-tts" id="tts-stop" title="Detener">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"></path></svg>
+                </button>
+                <progress id="tts-progreso" value="0" max="100"></progress>
+            </div>
+        </div>
+    </div>
+
+<script>
+   document.addEventListener('DOMContentLoaded', () => {
+
+    // --- BASE DE DATOS DE RESÚMENES ---
+
+    const resumenes = {
+    1: {
+        titulo: "Módulo 1: Estructura y Función Neuronal",
+        contenido: "La neurona es la unidad anatómica y funcional del sistema nervioso, una célula altamente especializada en recibir, integrar y transmitir información. Su morfología está optimizada para esta tarea: las dendritas, con sus espinas dendríticas que aumentan la superficie de contacto, constituyen el principal polo receptor (aferente). El soma o cuerpo celular es el centro metabólico que integra las señales recibidas. Si la integración de estas señales alcanza un umbral, se genera un impulso nervioso en el cono axónico, una zona de alta excitabilidad, que es conducido a lo largo del axón (polo emisor o eferente). Muchos axones están recubiertos por una vaina de mielina, un aislante lipídico formado por oligodendrocitos en el SNC y células de Schwann en el SNP, que permite una conducción saltatoria mucho más rápida y eficiente. Las neuronas están íntimamente apoyadas por las células gliales: los astrocitos son fundamentales, formando la barrera hematoencefálica, proveyendo nutrientes y regulando el ambiente sináptico; la microglía constituye el sistema inmune del SNC, y otras células como las ependimarias recubren los ventrículos."
+    },
+    2: {
+        titulo: "Módulo 2: Potenciales de Membrana y Acción",
+        contenido: "La comunicación neuronal es un proceso electroquímico. En estado de reposo, la neurona exhibe un potencial de membrana de aproximadamente -70mV, manteniendo su interior negativo gracias a dos factores clave: una alta permeabilidad al potasio (K+) a través de canales de fuga que permiten su salida a favor de su gradiente de concentración, y la acción incesante de la bomba Na+/K+, que gasta energía (ATP) para expulsar 3 iones de sodio (Na+) por cada 2 de K+ que introduce. Los estímulos recibidos en dendritas y soma generan potenciales graduados, que son cambios locales de voltaje, sumables en tiempo y espacio, y cuya amplitud es proporcional al estímulo. Si la suma de estos potenciales despolarizantes alcanza el umbral crítico (aprox. -50mV) en el cono axónico, se desencadena un potencial de acción: una inversión de polaridad masiva y de 'todo o nada'. Este evento se debe a una apertura secuencial de canales iónicos dependientes de voltaje: primero una rápida entrada de Na+ (despolarización) y luego una salida más lenta de K+ (repolarización). Este impulso se propaga de forma regenerativa y sin decremento por el axón, garantizando la fidelidad de la señal a larga distancia."
+    },
+    3: {
+        titulo: "Módulo 3: Sinapsis y Comunicación Neuronal",
+        contenido: "La sinapsis es la unión funcional donde se transfiere la información. En la sinapsis química, la llegada de un potencial de acción al terminal axónico provoca la apertura de canales de Ca2+ dependientes de voltaje. La entrada de Ca2+ es la señal para que las vesículas sinápticas, llenas de neurotransmisores, se fusionen con la membrana presináptica y liberen su contenido a la hendidura sináptica. Los neurotransmisores se difunden y se unen a receptores específicos en la membrana postsináptica. Estos receptores pueden ser ionotrópicos (canales que se abren directamente, generando respuestas rápidas) o metabotrópicos (acoplados a Proteínas G, que inician cascadas de segundos mensajeros con efectos más lentos, duraderos y moduladores). La activación de estos receptores produce un potencial postsináptico, que será excitatorio (PPSE) si despolariza la membrana (ej. entrada de Na+), o inhibitorio (PPSI) si la hiperpolariza (ej. entrada de Cl-). La sinapsis eléctrica, mediante uniones 'gap', permite un acoplamiento eléctrico directo, siendo más rápida pero menos plástica, ideal para sincronizar poblaciones neuronales."
+    },
+    4: {
+        titulo: "Módulo 4: Desarrollo del Sistema Nervioso",
+        contenido: "El sistema nervioso se origina del ectodermo, la capa germinal más externa del embrión. Un proceso clave, la neurulación, da forma al tubo neural (que originará el SNC) y la cresta neural (que originará el SNP). El desarrollo cerebral es un proceso extraordinariamente largo y complejo, orquestado por una secuencia de eventos superpuestos: 1) Neurogénesis: proliferación de células precursoras que darán lugar a las neuronas. 2) Migración celular: las neuronas inmaduras viajan, a menudo guiadas por la glía radial, hasta su ubicación definitiva en el cerebro. 3) Diferenciación: las neuronas adquieren su morfología y perfil neuroquímico específico. 4) Sinaptogénesis: se produce una formación masiva y exuberante de conexiones sinápticas. 5) Poda sináptica y muerte celular programada (apoptosis): se eliminan las neuronas y sinapsis redundantes o incorrectas, un proceso de refinamiento crucial dependiente de la experiencia que optimiza la eficiencia de los circuitos. Este proceso de maduración continúa hasta la adultez temprana, siendo la corteza prefrontal, sede de las funciones ejecutivas, una de las últimas en completarse."
+    },
+    5: {
+        titulo: "Módulo 5: Anatomía del Sistema Nervioso",
+        contenido: "El sistema nervioso se organiza en el Sistema Nervioso Central (SNC), que comprende el encéfalo y la médula espinal, y actúa como centro de integración y mando; y el Sistema Nervioso Periférico (SNP), que consiste en los nervios (craneales y espinales) y ganglios que conectan el SNC con el resto del cuerpo. El SNC está protegido por el cráneo y la columna vertebral, por tres membranas meníngeas (duramadre, aracnoides y piamadre), y flota en el líquido cefalorraquídeo (LCR), que le proporciona amortiguación. El encéfalo se compone del cerebro (dividido en dos hemisferios, cada uno con lóbulos frontal, parietal, temporal y occipital), el cerebelo (esencial para la coordinación motora fina y el aprendizaje motor) y el tronco encefálico (que controla funciones vitales como la respiración y el ritmo cardíaco). La distribución de la sustancia gris (somas y dendritas) y la sustancia blanca (axones mielinizados) es distintiva: en el cerebro, la gris forma la corteza externa y los núcleos profundos, mientras que en la médula espinal es central, rodeada por la blanca."
+    },
+    6: {
+        titulo: "Módulo 6: Sistemas Sensoriales I (Visión y Audición)",
+        contenido: "La percepción se inicia con la transducción, la conversión de energía física en señales neurales. La visión transduce la energía electromagnética (luz) en la retina. Allí, dos tipos de fotorreceptores coexisten: los bastones, extremadamente sensibles a la luz pero acromáticos, dominan en la periferia y en condiciones de baja luminosidad (visión escotópica); y los conos, responsables de la visión de alta agudeza y del color (visión fotópica), se concentran en la fóvea. La información es procesada por células bipolares y ganglionares (cuyos axones forman el nervio óptico) y viaja a través del tálamo (núcleo geniculado lateral) hasta la corteza visual primaria en el lóbulo occipital. La audición transduce las ondas de presión del aire (sonido). El oído medio (martillo, yunque y estribo) amplifica estas vibraciones y las transmite a la cóclea del oído interno. Aquí, las vibraciones de la membrana basilar flexionan las células ciliadas del órgano de Corti, que son los mecanorreceptores que generan la señal nerviosa. La frecuencia del sonido se codifica por el lugar de la membrana basilar que más vibra (tonotopía) y la amplitud se codifica como intensidad (volumen)."
+    },
+    7: {
+        titulo: "Módulo 7: Sistemas Sensoriales II (Somatosensorial y Vestibular)",
+        contenido: "El sistema somatosensorial nos informa sobre nuestro propio cuerpo a través de varias submodalidades. El tacto es mediado por mecanorreceptores en la piel que detectan presión, vibración y textura. La propiocepción, o cinestesia, nos da el sentido de la posición y movimiento de nuestras extremidades, gracias a receptores en músculos (husos musculares) y tendones (órgano tendinoso de Golgi). La termocepción detecta la temperatura de la piel, y la nocicepción es el sistema de alerta del dolor, que responde a estímulos potencialmente dañinos. Toda esta información asciende por vías específicas en la médula espinal y el tronco encefálico hasta la corteza somatosensorial primaria en el lóbulo parietal. El sistema vestibular, en el oído interno, es nuestro 'acelerómetro' interno. Los canales semicirculares detectan la aceleración angular (giros de la cabeza), mientras que los órganos otolíticos (utrículo y sáculo) detectan la aceleración lineal y la fuerza de la gravedad. Esta información es vital para el equilibrio, la postura y la estabilización de la mirada (reflejo vestíbulo-ocular)."
+    },
+    8: {
+        titulo: "Módulo 8: Control Motor y Sistema Nervioso Autónomo",
+        contenido: "El control del movimiento voluntario es una operación jerárquica y distribuida. La intención de moverse se origina en áreas de asociación corticales (prefrontal, parietal). La planificación y secuenciación de la acción involucra a la corteza premotora y el área motora suplementaria. Dos sistemas subcorticales son cruciales para refinar el movimiento: los ganglios basales participan en la selección e inicio de los movimientos adecuados y la supresión de los no deseados, mientras que el cerebelo actúa como un comparador, corrigiendo errores en tiempo real y asegurando la coordinación y fluidez del movimiento. La orden final se envía desde la corteza motora primaria a través de las vías descendentes hasta las motoneuronas de la médula espinal. Paralelamente, el Sistema Nervioso Autónomo (SNA) regula de forma involuntaria el medio interno. La división simpática moviliza energía para respuestas de 'lucha o huida', mientras que la parasimpática gestiona los procesos de 'descanso y digestión', conservando energía. Ambas actúan en un equilibrio dinámico para mantener la homeostasis."
+    },
+    9: {
+        titulo: "Módulo 9: Hipotálamo, Homeostasis y Estrés",
+        contenido: "El hipotálamo es una pequeña pero vital estructura del diencéfalo, que actúa como el principal centro integrador de la homeostasis, el proceso de mantener la estabilidad del medio interno. Orquesta respuestas para regular la temperatura corporal, el balance energético (hambre y saciedad), el balance hídrico (sed) y los ritmos circadianos (a través de su núcleo supraquiasmático). Actúa como la interfaz fundamental entre el sistema nervioso y el sistema endocrino, controlando directamente la neurohipófisis y regulando la adenohipófisis mediante hormonas liberadoras. Ante un estresor, el hipotálamo desencadena una respuesta bifásica: una activación inmediata y rápida del sistema nervioso simpático (liberación de adrenalina) y una respuesta más lenta y sostenida a través del eje Hipotálamo-Hipofisario-Adrenal (HHA), que culmina con la secreción de cortisol por la corteza suprarrenal. El cortisol moviliza recursos energéticos y, a su vez, ejerce retroalimentación negativa sobre el propio eje para finalizar la respuesta al estrés."
+    },
+    10: {
+        titulo: "Módulo 10: Emociones y Sistema Límbico",
+        contenido: "Las emociones son respuestas adaptativas complejas a estímulos relevantes, que integran tres componentes: una respuesta fisiológica (cambios en el SNA y endocrinos), una respuesta conductual (expresiones faciales, posturas) y una experiencia cognitiva subjetiva (el sentimiento). El sistema límbico, una red funcional de regiones cerebrales mediales, es clave en este proceso. Dentro de este sistema, la amígdala funciona como un 'detector de relevancia', evaluando el significado emocional de los estímulos y orquestando respuestas rápidas, especialmente ante amenazas (miedo). El hipotálamo ejecuta las respuestas fisiológicas de la emoción. La corteza prefrontal, particularmente su región ventromedial, ejerce un control regulador de arriba hacia abajo (top-down), modulando las respuestas emocionales, evaluando las consecuencias a largo plazo e integrando la emoción en la toma de decisiones y el comportamiento socialmente apropiado."
+    },
+    11: {
+        titulo: "Módulo 11: Aprendizaje, Memoria y Sueño",
+        contenido: "El aprendizaje es el proceso de adquirir nueva información, y la memoria es la persistencia de ese aprendizaje. Las memorias se dividen en dos grandes tipos. La memoria explícita (declarativa) es el recuerdo consciente de hechos (semántica) y experiencias personales (episódica); su formación y consolidación inicial depende críticamente del complejo del lóbulo temporal medial, especialmente del hipocampo. La memoria implícita (no declarativa) es no consciente y se expresa a través del rendimiento, incluyendo habilidades motoras (dependiente de ganglios basales y cerebelo) y el condicionamiento emocional (dependiente de la amígdala). El sueño juega un papel insustituible en la consolidación de la memoria. Durante el sueño de ondas lentas (No-REM), el hipocampo 'reactiva' los patrones de actividad neuronal de experiencias recientes, transfiriendo y fortaleciendo gradualmente estas memorias en la neocorteza para su almacenamiento a largo plazo. Este proceso es regulado por la interacción de un impulso homeostático de sueño (que se acumula con la vigilia) y el reloj circadiano."
+    }
+};
+
+    
+    
+    // --- BASE DE DATOS DE PREGUNTAS (AMPLIADA) ---
+    const preguntas = {
+        1: [
+            // Módulo 1: Estructura y Función de la Neurona (Preguntas existentes + nuevas)
+            { pregunta: "En una neurona típica, la información fluye desde el axón hacia el soma.", respuesta: false, justificacion: "Falso. El flujo de información en una neurona típica (polaridad dinámica) es desde las dendritas, pasando por el soma (donde se integra), y luego a lo largo del axón hasta los botones sinápticos." },
+            { pregunta: "Las células gliales, como los astrocitos, participan activamente en la sinapsis.", respuesta: true, justificacion: "Verdadero. Los astrocitos rodean las sinapsis (sinapsis tripartita), ayudando a regular la concentración de neurotransmisores y iones, y modulando la comunicación neuronal." },
+            { pregunta: "La vaina de mielina es continua a lo largo de todo el axón para maximizar la velocidad de conducción.", respuesta: false, justificacion: "Falso. La vaina de mielina está interrumpida por los Nodos de Ranvier. Esta disposición permite la conducción saltatoria del potencial de acción, que es mucho más rápida y energéticamente eficiente." },
+            { pregunta: "Las dendritas se caracterizan por la presencia de vesículas sinápticas para liberar neurotransmisores.", respuesta: false, justificacion: "Falso. Las vesículas sinápticas se encuentran en los botones terminales del axón, desde donde se liberan los neurotransmisores. Las dendritas son principalmente receptoras de información." },
+            { pregunta: "Los oligodendrocitos y las células de Schwann tienen la misma función: formar la vaina de mielina.", respuesta: true, justificacion: "Verdadero. Ambos tipos de células gliales forman la vaina de mielina, pero en diferentes partes del sistema nervioso: los oligodendrocitos en el Sistema Nervioso Central (SNC) y las células de Schwann en el Sistema Nervioso Periférico (SNP)." },
+            { pregunta: "El soma neuronal es el único lugar donde se procesa la información nerviosa.", respuesta: false, justificacion: "Falso. Si bien el soma es el principal centro de integración, el procesamiento también ocurre a nivel de las dendritas y el cono axónico, donde se decide si se dispara o no un potencial de acción." },
+            { pregunta: "Las neuronas son las células más abundantes del sistema nervioso.", respuesta: false, justificacion: "Falso. Aunque son fundamentales, las células gliales son aproximadamente igual de numerosas que las neuronas (alrededor de 85 mil millones de células gliales y 86 mil millones de neuronas)." },
+            { pregunta: "Las neuronas anaxónicas no tienen axón.", respuesta: false, justificacion: "Falso. Tienen un axón, pero es morfológicamente indistinguible de sus dendritas, de ahí su nombre. Siguen teniendo una polaridad funcional." },
+            { pregunta: "Las neuronas motoras o eferentes conducen información desde el SNC hacia los músculos o glándulas.", respuesta: true, justificacion: "Verdadero. Las neuronas eferentes (de 'salir') llevan las órdenes motoras desde el sistema nervioso central hacia los órganos efectores para producir una respuesta." },
+            { pregunta: "Las células de la microglía tienen una función principalmente estructural, dando soporte a las neuronas.", respuesta: false, justificacion: "Falso. La microglía constituye el sistema inmune del sistema nervioso central. Tienen función fagocítica, eliminando desechos y patógenos." },
+            { pregunta: "El cono axónico es la región de la neurona con el umbral más bajo para disparar un potencial de acción.", respuesta: true, justificacion: "Verdadero. El cono axónico tiene una alta densidad de canales de sodio dependientes de voltaje, lo que lo convierte en la 'zona de disparo' donde se inician los potenciales de acción." },
+            { pregunta: "Las espinas dendríticas disminuyen la superficie de la dendrita para optimizar la recepción de señales.", respuesta: false, justificacion: "Falso. Las espinas dendríticas son protuberancias que aumentan enormemente la superficie receptora de las dendritas, permitiendo un mayor número de conexiones sinápticas." },
+            { pregunta: "Las neuronas, al ser células altamente especializadas, no se reproducen.", respuesta: true, justificacion: "Verdadero. En general, las neuronas maduras pierden su capacidad de división celular (mitosis), aunque existe neurogénesis adulta limitada en algunas áreas como el hipocampo." },
+            { pregunta: "Las interneuronas comunican información directamente desde un receptor sensorial al SNC.", respuesta: false, justificacion: "Falso. Esa es la función de las neuronas sensoriales (aferentes). Las interneuronas se encuentran dentro del SNC y conectan otras neuronas entre sí, cumpliendo funciones de integración." },
+            { pregunta: "Un solo oligodendrocito puede mielinizar segmentos de varios axones diferentes.", respuesta: true, justificacion: "Verdadero. A diferencia de las células de Schwann (que mielinizan un solo segmento de un axón), un oligodendrocito puede extender sus prolongaciones para mielinizar múltiples axones en el SNC." },
+            { pregunta: "Las neuronas son altamente resistentes a la falta de oxígeno y glucosa.", respuesta: false, justificacion: "Falso. Las neuronas tienen un metabolismo muy alto y dependen críticamente del suministro constante de oxígeno y glucosa. Su función se ve comprometida rápidamente ante la falta de estos." },
+            { pregunta: "Las neuronas pseudomonopolares son típicas neuronas sensoriales.", respuesta: true, justificacion: "Verdadero. Este tipo de neurona, con el soma a un lado del axón, es característico de las neuronas sensoriales que transmiten información desde la periferia al SNC, como las de los ganglios de la raíz dorsal." },
+            { pregunta: "El teledendron es el conjunto de ramificaciones iniciales que salen del soma.", respuesta: false, justificacion: "Falso. El teledendron es el conjunto de ramificaciones terminales del axón, donde se encuentran los botones sinápticos." },
+            { pregunta: "Las células gliales no participan en la recaptación de neurotransmisores.", respuesta: false, justificacion: "Falso. Los astrocitos, un tipo de célula glial, juegan un papel crucial en la recaptación de neurotransmisores como el glutamato del espacio sináptico, finalizando su acción." },
+            { pregunta: "Todas las neuronas del cuerpo humano poseen vaina de mielina.", respuesta: false, justificacion: "Falso. Muchos axones, especialmente los que son cortos (como los de muchas interneuronas) o los que conducen señales de dolor lento, son amielínicos." },
+            { pregunta: "La barrera hematoencefálica está formada principalmente por neuronas especializadas.", respuesta: false, justificacion: "Falso. La barrera hematoencefálica está formada por las células endoteliales de los capilares cerebrales y reforzada por las prolongaciones de los astrocitos, regulando estrictamente el paso de sustancias al cerebro." },
+            { pregunta: "Las neuronas bipolares se caracterizan por tener múltiples dendritas y un solo axón.", respuesta: false, justificacion: "Falso. Las neuronas bipolares tienen dos prolongaciones que se extienden desde polos opuestos del soma: una dendrita y un axón. Las neuronas con múltiples dendritas son multipolares." },
+            { pregunta: "La principal función de las mitocondrias en la neurona es la síntesis de proteínas.", respuesta: false, justificacion: "Falso. La principal función de las mitocondrias es la producción de energía (ATP) a través de la respiración celular. La síntesis de proteínas ocurre en los ribosomas y el retículo endoplasmático rugoso." }
+        ],
+        2: [
+            // Módulo 2: Potenciales de Membrana y Acción (Preguntas existentes + nuevas)
+            { pregunta: "En estado de reposo, el interior de la neurona es eléctricamente positivo con respecto al exterior.", respuesta: false, justificacion: "Falso. El potencial de reposo de una neurona es negativo en el interior (aprox. -70mV) debido a la salida de iones de potasio (K+) a través de canales de fuga y a la presencia de aniones proteicos intracelulares." },
+            { pregunta: "La bomba de sodio-potasio contribuye a mantener el potencial de reposo gastando energía (ATP).", respuesta: true, justificacion: "Verdadero. La bomba de sodio-potasio transporta activamente 3 iones de Na+ hacia afuera y 2 iones de K+ hacia adentro, en contra de sus gradientes de concentración, ayudando a mantener las diferencias iónicas que sustentan el potencial de reposo." },
+            { pregunta: "Un potencial de acción es una respuesta graduada; su amplitud depende de la intensidad del estímulo.", respuesta: false, justificacion: "Falso. El potencial de acción sigue la ley del 'todo o nada'. Una vez que el estímulo alcanza el umbral, el potencial de acción se dispara siempre con la misma amplitud, independientemente de la intensidad del estímulo inicial." },
+            { pregunta: "La fase de despolarización rápida del potencial de acción se debe a la entrada masiva de iones de potasio (K+).", respuesta: false, justificacion: "Falso. La despolarización rápida es causada por la apertura de canales de sodio (Na+) dependientes de voltaje y la consecuente entrada masiva de Na+ a la célula." },
+            { pregunta: "La fase de repolarización del potencial de acción se debe a la salida de iones de sodio (Na+).", respuesta: false, justificacion: "Falso. La repolarización ocurre cuando los canales de Na+ se inactivan y los canales de K+ dependientes de voltaje se abren, permitiendo la salida de K+ de la célula, lo que devuelve el potencial de membrana a valores negativos." },
+            { pregunta: "Durante el período refractario absoluto, es imposible generar un nuevo potencial de acción, sin importar la intensidad del estímulo.", respuesta: true, justificacion: "Verdadero. Durante este período, los canales de sodio dependientes de voltaje están en un estado inactivado y no pueden volver a abrirse hasta que la membrana se repolarice." },
+            { pregunta: "La conducción saltatoria ocurre en axones amielínicos y es más lenta que la conducción continua.", respuesta: false, justificacion: "Falso. La conducción saltatoria ocurre en axones mielinizados. El potencial de acción 'salta' de un Nodo de Ranvier al siguiente, lo que la hace mucho más rápida y eficiente que la conducción continua en axones amielínicos." },
+            { pregunta: "Los potenciales postsinápticos excitatorios (PPEs) siempre desencadenan un potencial de acción.", respuesta: false, justificacion: "Falso. Un solo PPE generalmente es subumbral. Se necesita la sumación (temporal o espacial) de múltiples PPEs para que la despolarización en el cono axónico alcance el umbral y dispare un potencial de acción." },
+            { pregunta: "Una hiperpolarización hace que el potencial de membrana se vuelva menos negativo.", respuesta: false, justificacion: "Falso. Una hiperpolarización hace que el potencial de membrana se vuelva más negativo que el potencial de reposo, alejándolo del umbral de disparo y haciendo a la neurona menos propensa a disparar." },
+            { pregunta: "El ión potasio (K+) está más concentrado en el exterior de la neurona en estado de reposo.", respuesta: false, justificacion: "Falso. En estado de reposo, el potasio (K+) está mucho más concentrado en el interior de la neurona, mientras que el sodio (Na+) y el cloro (Cl-) están más concentrados en el exterior." },
+            { pregunta: "Para transportar el ion sodio (Na+) hacia el exterior de la neurona en reposo es necesario el aporte de energía.", respuesta: true, justificacion: "Verdadero. El Na+ se transporta hacia el exterior en contra de su gradiente de concentración mediante la bomba de sodio-potasio, un proceso de transporte activo que requiere ATP." },
+            { pregunta: "Los potenciales graduados se propagan sin decremento a lo largo de la membrana.", respuesta: false, justificacion: "Falso. Los potenciales graduados (como los PPEs y los PIPs) son locales y su amplitud disminuye a medida que se alejan de su punto de origen. Solo los potenciales de acción se propagan sin decremento." },
+            { pregunta: "El umbral de disparo para un potencial de acción es un valor fijo e idéntico para todas las neuronas.", respuesta: false, justificacion: "Falso. Aunque se sitúa alrededor de -55mV, el umbral exacto puede variar ligeramente entre diferentes tipos de neuronas dependiendo de sus propiedades intrínsecas, como la densidad de canales iónicos." },
+            { pregunta: "La apertura de canales de Cloro (Cl-) en la membrana postsináptica generalmente produce una despolarización.", respuesta: false, justificacion: "Falso. La entrada de Cl-, un anión, al interior de la célula produce una hiperpolarización o estabiliza el potencial de reposo, generando un Potencial Postsináptico Inhibitorio (PIPS) y dificultando el disparo de un potencial de acción." },
+            { pregunta: "La sumación espacial implica la llegada de múltiples estímulos a diferentes lugares de la neurona casi al mismo tiempo.", respuesta: true, justificacion: "Verdadero. La sumación espacial es la integración de potenciales postsinápticos que se originan en diferentes sinapsis. Si la suma de despolarizaciones alcanza el umbral, se genera un potencial de acción." },
+            { pregunta: "La bomba de sodio-potasio saca 2 iones de Na+ e introduce 3 iones de K+.", respuesta: false, justificacion: "Falso. La bomba de sodio-potasio expulsa 3 iones de sodio (Na+) e introduce 2 iones de potasio (K+) en cada ciclo, contribuyendo a la negatividad del interior celular." },
+            { pregunta: "La principal razón del potencial de reposo negativo es la permeabilidad de la membrana al sodio (Na+).", respuesta: false, justificacion: "Falso. La principal razón es la alta permeabilidad de la membrana en reposo al potasio (K+), que tiende a salir de la célula a favor de su gradiente de concentración, dejando atrás una carga neta negativa." },
+            { pregunta: "Los canales iónicos dependientes de voltaje son cruciales para los potenciales graduados.", respuesta: false, justificacion: "Falso. Los potenciales graduados (postsinápticos) dependen principalmente de canales iónicos activados por ligando (neurotransmisores). Los canales dependientes de voltaje son esenciales para el potencial de acción." },
+            { pregunta: "La intensidad de un estímulo sensorial se codifica por la amplitud del potencial de acción.", respuesta: false, justificacion: "Falso. La amplitud del potencial de acción es constante (ley del todo o nada). La intensidad del estímulo se codifica por la frecuencia de disparo de los potenciales de acción." },
+            { pregunta: "El período refractario relativo ocurre inmediatamente después de la despolarización y antes de la repolarización.", respuesta: false, justificacion: "Falso. El período refractario (absoluto y luego relativo) ocurre después del pico del potencial de acción, durante la repolarización y la hiperpolarización, asegurando la propagación unidireccional del impulso." },
+            { pregunta: "Una toxina que bloquea los canales de K+ dependientes de voltaje prolongaría la duración del potencial de acción.", respuesta: true, justificacion: "Verdadero. Si los canales de K+ se bloquean, la fase de repolarización se retrasaría significativamente, ya que la salida de K+ es el principal mecanismo que devuelve rápidamente la membrana a su potencial de reposo." },
+            { pregunta: "La sumación temporal se refiere a la suma de potenciales que llegan a la neurona desde diferentes lugares en el mismo momento.", respuesta: false, justificacion: "Falso. Eso describe la sumación espacial. La sumación temporal se refiere a la suma de potenciales que llegan al mismo lugar de la neurona en rápida sucesión." },
+            { pregunta: "El potencial de acción se inicia típicamente en las dendritas.", respuesta: false, justificacion: "Falso. El potencial de acción se inicia en el cono axónico, ya que es la zona con mayor densidad de canales de sodio dependientes de voltaje y, por tanto, el umbral más bajo." }
+        ],
+        3: [
+            // Módulo 3: Sinapsis y Comunicación Neuronal (Preguntas existentes + nuevas)
+            { pregunta: "En una sinapsis química, las neuronas pre y postsináptica están en contacto físico directo.", respuesta: false, justificacion: "Falso. En la sinapsis química existe un espacio físico llamado hendidura sináptica que separa ambas neuronas. La comunicación se da por neurotransmisores que cruzan este espacio." },
+            { pregunta: "La sinapsis eléctrica es más rápida que la sinapsis química.", respuesta: true, justificacion: "Verdadero. La sinapsis eléctrica permite el paso directo de corriente iónica a través de uniones 'gap' (conexones), lo que la hace prácticamente instantánea, mientras que la sinapsis química implica varios pasos (liberación, difusión, unión del neurotransmisor)." },
+            { pregunta: "La liberación de neurotransmisores desde la terminal presináptica es dependiente de la entrada de iones de Calcio (Ca2+).", respuesta: true, justificacion: "Verdadero. La llegada del potencial de acción a la terminal axónica abre canales de Ca2+ dependientes de voltaje. La entrada de Ca2+ es la señal crucial que desencadena la fusión de las vesículas sinápticas con la membrana y la liberación del neurotransmisor." },
+            { pregunta: "Las sinapsis eléctricas son el tipo más abundante en el sistema nervioso de los mamíferos.", respuesta: false, justificacion: "Falso. Las sinapsis químicas son, con diferencia, el tipo más común y versátil en el sistema nervioso de los mamíferos, permitiendo una mayor modulación y complejidad en la comunicación." },
+            { pregunta: "Un mismo neurotransmisor siempre tiene el mismo efecto (excitatorio o inhibitorio) en todas las sinapsis.", respuesta: false, justificacion: "Falso. El efecto de un neurotransmisor no depende de la molécula en sí, sino del tipo de receptor al que se une en la membrana postsináptica. Por ejemplo, la acetilcolina es excitatoria en la unión neuromuscular pero inhibitoria en el corazón." },
+            { pregunta: "Los receptores ionotrópicos actúan a través de segundos mensajeros para abrir canales iónicos.", respuesta: false, justificacion: "Falso. Los receptores ionotrópicos son canales iónicos en sí mismos. La unión del neurotransmisor provoca un cambio conformacional que abre directamente el canal. Los que usan segundos mensajeros son los receptores metabotrópicos." },
+            { pregunta: "La recaptación es un mecanismo para eliminar los neurotransmisores de la hendidura sináptica.", respuesta: true, justificacion: "Verdadero. La recaptación, llevada a cabo por proteínas transportadoras en la membrana presináptica o en células gliales, es un mecanismo eficiente para finalizar la señal sináptica y reciclar el neurotransmisor." },
+            { pregunta: "La sinapsis química es típicamente bidireccional.", respuesta: false, justificacion: "Falso. Debido a que los neurotransmisores están en la terminal presináptica y los receptores en la postsináptica, la transmisión de información es unidireccional." },
+            { pregunta: "Una sinapsis axo-axónica puede modular la cantidad de neurotransmisor liberado por otra neurona.", respuesta: true, justificacion: "Verdadero. En una sinapsis axo-axónica, una terminal axónica hace sinapsis sobre otra. Esto puede causar inhibición o facilitación presináptica, regulando la liberación de neurotransmisor de la segunda terminal." },
+            { pregunta: "La degradación enzimática en la hendidura sináptica es el principal mecanismo de inactivación para todos los neurotransmisores.", respuesta: false, justificacion: "Falso. Aunque es crucial para algunos neurotransmisores como la acetilcolina (degradada por la acetilcolinesterasa), para muchos otros, como la dopamina o la serotonina, la recaptación es el mecanismo principal." },
+            { pregunta: "Los potenciales postsinápticos excitatorios (PPEs) se producen por la apertura de canales de Cloro (Cl-).", respuesta: false, justificacion: "Falso. Los PPEs son despolarizaciones causadas generalmente por la apertura de canales permeables a cationes como el Sodio (Na+)." },
+            { pregunta: "Los receptores metabotrópicos producen respuestas más lentas pero más duraderas que los ionotrópicos.", respuesta: true, justificacion: "Verdadero. Al implicar una cascada de señalización intracelular (proteínas G, segundos mensajeros), los efectos de los receptores metabotrópicos tienen un inicio más lento pero pueden tener consecuencias más amplias y prolongadas en la célula postsináptica." },
+            { pregunta: "Las vesículas sinápticas se fusionan con la membrana postsináptica para liberar su contenido.", respuesta: false, justificacion: "Falso. Las vesículas sinápticas se fusionan con la membrana de la terminal presináptica en un proceso llamado exocitosis." },
+            { pregunta: "La sumación de potenciales postsinápticos ocurre en los botones terminales del axón.", respuesta: false, justificacion: "Falso. La integración y sumación de los potenciales postsinápticos (PPEs y PIPs) ocurre principalmente en el soma y el cono axónico de la neurona postsináptica." },
+            { pregunta: "Un fármaco antagonista es aquel que imita o potencia el efecto de un neurotransmisor.", respuesta: false, justificacion: "Falso. Un antagonista es una sustancia que bloquea o reduce el efecto de un neurotransmisor, generalmente al unirse al receptor sin activarlo. Una sustancia que potencia el efecto se llama agonista." },
+            { pregunta: "Las sinapsis eléctricas sincronizan la actividad de poblaciones de neuronas.", respuesta: true, justificacion: "Verdadero. Debido a su alta velocidad y acoplamiento directo, las sinapsis eléctricas son ideales para coordinar y sincronizar el disparo de grupos de neuronas que necesitan actuar al unísono." },
+            { pregunta: "La cantidad de neurotransmisor liberado es independiente de la frecuencia de los potenciales de acción.", respuesta: false, justificacion: "Falso. Una mayor frecuencia de potenciales de acción en la terminal presináptica provoca una mayor entrada de Ca2+ y, en consecuencia, la liberación de una mayor cantidad de neurotransmisor." },
+            { pregunta: "Los autorreceptores se encuentran en la membrana postsináptica y regulan la síntesis de neurotransmisores.", respuesta: false, justificacion: "Falso. Los autorreceptores se encuentran en la membrana presináptica. Son receptores para el propio neurotransmisor liberado por la neurona, y su activación suele inhibir la síntesis y/o liberación posterior de dicho neurotransmisor (un mecanismo de retroalimentación negativa)." },
+            { pregunta: "La acetilcolina es el principal neurotransmisor inhibitorio del cerebro.", respuesta: false, justificacion: "Falso. El principal neurotransmisor inhibitorio en el cerebro es el GABA (ácido gamma-aminobutírico). La acetilcolina tiene funciones principalmente excitatorias en el SNC y en la unión neuromuscular." },
+            { pregunta: "El glutamato es el principal neurotransmisor excitatorio del sistema nervioso central.", respuesta: true, justificacion: "Verdadero. El glutamato es el neurotransmisor excitatorio más abundante y principal en el SNC, implicado en la mayoría de las sinapsis rápidas excitatorias." },
+            { pregunta: "En una sinapsis neuromuscular, la célula postsináptica es una fibra muscular.", respuesta: true, justificacion: "Verdadero. La unión neuromuscular es la sinapsis especializada entre una neurona motora y una fibra muscular, donde la acetilcolina liberada por la neurona provoca la contracción del músculo." },
+            { pregunta: "Toda sinapsis involucra la participación de dos neuronas.", respuesta: false, justificacion: "Falso. Una sinapsis puede ocurrir entre una neurona y otra célula, como una célula muscular (unión neuromuscular) o una célula glandular." },
+            { pregunta: "Los conexones son proteínas características de las sinapsis químicas.", respuesta: false, justificacion: "Falso. Los conexones forman los canales de las uniones 'gap' y son las proteínas características de las sinapsis eléctricas, no de las químicas." }
+        ],
+        4: [
+            // Módulo 4: Desarrollo del Sistema Nervioso (Preguntas existentes + nuevas)
+            { pregunta: "El sistema nervioso central se origina a partir de la capa embrionaria llamada mesodermo.", respuesta: false, justificacion: "Falso. El sistema nervioso, tanto central como periférico, se origina a partir del ectodermo, la capa embrionaria más externa." },
+            { pregunta: "La notocorda es la estructura que se convertirá directamente en la médula espinal.", respuesta: false, justificacion: "Falso. La notocorda es una estructura del mesodermo que induce la formación de la placa neural en el ectodermo suprayacente. La médula espinal se forma a partir de la porción caudal del tubo neural." },
+            { pregunta: "La neurulación es el proceso de formación del tubo neural a partir de la placa neural.", respuesta: true, justificacion: "Verdadero. Durante la neurulación, la placa neural se pliega sobre sí misma para formar el surco neural, cuyos bordes (pliegues neurales) finalmente se fusionan para dar lugar al tubo neural." },
+            { pregunta: "El sistema nervioso periférico (SNP) se origina a partir del tubo neural.", respuesta: false, justificacion: "Falso. El SNP se origina principalmente de las células de la cresta neural, una población de células que se desprenden de los bordes de la placa neural durante la neurulación." },
+            { pregunta: "El telencéfalo y el diencéfalo son vesículas secundarias que derivan del prosencéfalo.", respuesta: true, justificacion: "Verdadero. El prosencéfalo (cerebro anterior), una de las tres vesículas primarias, se diferencia posteriormente en dos vesículas secundarias: el telencéfalo (que dará lugar a los hemisferios cerebrales) y el diencéfalo (tálamo, hipotálamo)." },
+            { pregunta: "El aumento del tamaño del cerebro después del nacimiento se debe principalmente a la creación de nuevas neuronas (neurogénesis).", respuesta: false, justificacion: "Falso. El crecimiento postnatal del cerebro se debe en gran medida a la sinaptogénesis (formación de sinapsis), el crecimiento de las dendritas y la mielinización de los axones, no a un aumento masivo en el número de neuronas." },
+            { pregunta: "La apoptosis o muerte celular programada es un proceso patológico que debe evitarse durante el desarrollo.", respuesta: false, justificacion: "Falso. La apoptosis es una parte normal y crucial del desarrollo del sistema nervioso. Se producen más neuronas de las necesarias, y aquellas que no establecen conexiones funcionales o no reciben suficientes factores tróficos son eliminadas." },
+            { pregunta: "La mielinización de la corteza prefrontal es uno de los últimos procesos de maduración en completarse, extendiéndose hasta la adultez joven.", respuesta: true, justificacion: "Verdadero. La mielinización sigue un patrón postero-anterior, y la corteza prefrontal, asociada con funciones ejecutivas superiores, es una de las últimas áreas en mielinizarse completamente." },
+            { pregunta: "Las células de la glía radial actúan como guías para la migración de las neuronas inmaduras.", respuesta: true, justificacion: "Verdadero. Durante el desarrollo cortical, las neuronas recién nacidas migran desde la zona ventricular (donde se originan) hacia su posición final en la corteza, utilizando las prolongaciones de las células de la glía radial como andamios." },
+            { pregunta: "La 'poda sináptica' es la eliminación de sinapsis redundantes o poco activas, un proceso que refina los circuitos neuronales.", respuesta: true, justificacion: "Verdadero. Después de un período de exuberante sinaptogénesis, ocurre un proceso de poda donde se eliminan las conexiones menos utilizadas. Esto aumenta la eficiencia y especificidad de los circuitos neuronales." },
+            { pregunta: "El cerebelo se desarrolla a partir del mesencéfalo (cerebro medio).", respuesta: false, justificacion: "Falso. El cerebelo, junto con la protuberancia, se desarrolla a partir del metencéfalo, una de las dos divisiones del rombencéfalo (cerebro posterior)." },
+            { pregunta: "Un fallo en el cierre del neuroporo caudal puede dar lugar a una condición llamada anencefalia.", respuesta: false, justificacion: "Falso. Un fallo en el cierre del neuroporo caudal causa espina bífida. La anencefalia (ausencia de gran parte del cerebro y cráneo) es el resultado de un fallo en el cierre del neuroporo cefálico (anterior)." },
+            { pregunta: "La experiencia y la actividad neuronal no influyen en la formación de los circuitos cerebrales; todo está determinado genéticamente.", respuesta: false, justificacion: "Falso. Si bien los genes proporcionan el plan básico, la experiencia y la actividad neuronal son cruciales para el refinamiento de los circuitos, la poda sináptica y la estabilización de las conexiones correctas ('lo que se usa, se queda')." },
+            { pregunta: "Las primeras células del embrión humano son plenipotenciales, es decir, pueden convertirse en cualquier tipo de célula del organismo.", respuesta: true, justificacion: "Verdadero. Las células más tempranas del embrión (blastómeros) son totipotentes o plenipotenciales, con la capacidad de diferenciarse en cualquier linaje celular." },
+            { pregunta: "La sinaptogénesis se completa en su totalidad antes del nacimiento.", respuesta: false, justificacion: "Falso. La sinaptogénesis es un proceso prolongado que tiene picos importantes después del nacimiento y continúa durante la infancia y la adolescencia, variando según la región cerebral." },
+            { pregunta: "El mesencéfalo, la protuberancia y el bulbo raquídeo forman el tronco encefálico.", respuesta: true, justificacion: "Verdadero. Estas tres estructuras, derivadas del mesencéfalo y el rombencéfalo embrionarios, constituyen el tronco encefálico en el cerebro adulto." },
+            { pregunta: "La diferenciación celular es el proceso por el cual las neuronas migran a su ubicación final.", respuesta: false, justificacion: "Falso. La diferenciación es el proceso por el cual una célula precursora adquiere las características especializadas de un tipo celular específico (p. ej., una neurona motora o una interneurona). El movimiento a su ubicación final es la migración." },
+            { pregunta: "La corteza cerebral se forma de 'adentro hacia afuera', con las neuronas de las capas más profundas naciendo y migrando primero.", respuesta: true, justificacion: "Verdadero. En la corticogénesis, las neuronas que formarán las capas más profundas (V y VI) se generan primero. Las neuronas de las capas más superficiales (II y III) nacen más tarde y migran a través de las capas ya formadas." },
+            { pregunta: "Los factores de crecimiento nervioso, como las neurotrofinas, son esenciales para la supervivencia neuronal durante el desarrollo.", respuesta: true, justificacion: "Verdadero. Las neuronas compiten por una cantidad limitada de factores tróficos liberados por sus células diana. Aquellas que obtienen suficientes factores sobreviven, mientras que las otras sufren apoptosis." },
+            { pregunta: "El rombencéfalo es la vesícula cerebral primaria que da origen al tálamo.", respuesta: false, justificacion: "Falso. El tálamo deriva del diencéfalo, que a su vez proviene del prosencéfalo. El rombencéfalo da origen al metencéfalo (protuberancia y cerebelo) y al mielencéfalo (bulbo raquídeo)." },
+            { pregunta: "La plasticidad del desarrollo se limita únicamente al período prenatal.", respuesta: false, justificacion: "Falso. El cerebro mantiene una alta plasticidad durante los 'períodos críticos' en la infancia y la adolescencia, y aunque disminuye, la plasticidad (capacidad de cambio) persiste durante toda la vida." },
+            { pregunta: "El mielencéfalo da origen al cerebelo.", respuesta: false, justificacion: "Falso. El mielencéfalo da origen al bulbo raquídeo. El cerebelo, junto con la protuberancia, se origina del metencéfalo." },
+            { pregunta: "Todas las regiones del tubo neural crecen de forma proporcional durante el desarrollo.", respuesta: false, justificacion: "Falso. El crecimiento es diferencial, lo que da lugar a la formación de las distintas vesículas y curvaturas del encéfalo." }
+        ],
+        5: [
+            // Módulo 5: Anatomía del Sistema Nervioso (Preguntas existentes + nuevas)
+            { pregunta: "El Sistema Nervioso Central (SNC) está compuesto por el encéfalo, la médula espinal y los nervios periféricos.", respuesta: false, justificacion: "Falso. El SNC está compuesto únicamente por el encéfalo y la médula espinal. Los nervios periféricos forman parte del Sistema Nervioso Periférico (SNP)." },
+            { pregunta: "La sustancia gris está compuesta principalmente por axones mielinizados.", respuesta: false, justificacion: "Falso. La sustancia gris está compuesta por somas neuronales, dendritas, axones amielínicos y células gliales. La sustancia blanca es la que está formada por axones mielinizados." },
+            { pregunta: "El cuerpo calloso es una estructura de sustancia gris que conecta los dos hemisferios cerebrales.", respuesta: false, justificacion: "Falso. El cuerpo calloso es la comisura más grande de sustancia blanca, compuesta por millones de axones mielinizados que conectan los hemisferios cerebrales derecho e izquierdo." },
+            { pregunta: "La cisura de Rolando (o surco central) separa el lóbulo frontal del lóbulo parietal.", respuesta: true, justificacion: "Verdadero. La cisura de Rolando es un importante punto de referencia anatómico que delimita la frontera entre el lóbulo frontal (anterior) y el lóbulo parietal (posterior)." },
+            { pregunta: "El cerebelo forma parte del tronco encefálico.", respuesta: false, justificacion: "Falso. Aunque está estrechamente conectado, el cerebelo es una estructura distinta del tronco encefálico (compuesto por el mesencéfalo, la protuberancia y el bulbo raquídeo)." },
+            { pregunta: "Los ganglios basales son núcleos de sustancia gris localizados en la profundidad de los hemisferios cerebrales.", respuesta: true, justificacion: "Verdadero. Los ganglios basales (como el núcleo caudado, putamen y globo pálido) son importantes masas de sustancia gris subcorticales, cruciales para el control motor." },
+            { pregunta: "El líquido cefalorraquídeo (LCR) circula por el espacio subdural, entre la duramadre y la aracnoides.", respuesta: false, justificacion: "Falso. El LCR circula por el espacio subaracnoideo, que se encuentra entre la membrana aracnoides y la piamadre, así como por los ventrículos cerebrales." },
+            { pregunta: "El tálamo actúa como una estación de relevo para casi toda la información sensorial que se dirige a la corteza cerebral.", respuesta: true, justificacion: "Verdadero. Con la excepción del olfato, toda la información sensorial (visual, auditiva, somatosensorial, gustativa) hace sinapsis en núcleos específicos del tálamo antes de ser proyectada a la corteza." },
+            { pregunta: "El sistema nervioso somático controla funciones involuntarias como la frecuencia cardíaca y la digestión.", respuesta: false, justificacion: "Falso. El sistema nervioso somático controla los movimientos voluntarios de los músculos esqueléticos. Las funciones involuntarias son reguladas por el sistema nervioso autónomo." },
+            { pregunta: "La médula espinal humana presenta un ensanchamiento cervical y uno lumbar.", respuesta: true, justificacion: "Verdadero. Estos ensanchamientos corresponden a las regiones donde se originan los nervios que inervan las extremidades superiores (plexo braquial) e inferiores (plexo lumbosacro), que requieren un mayor número de neuronas." },
+            { pregunta: "La corteza visual primaria se encuentra en el lóbulo temporal.", respuesta: false, justificacion: "Falso. La corteza visual primaria está localizada en la parte más posterior del cerebro, en el lóbulo occipital." },
+            { pregunta: "El hipotálamo es una estructura clave para la regulación de la homeostasis y el sistema endocrino.", respuesta: true, justificacion: "Verdadero. El hipotálamo regula funciones vitales como la temperatura, el hambre, la sed y los ritmos circadianos, y controla la glándula hipófisis, que es la glándula maestra del sistema endocrino." },
+            { pregunta: "Los nervios craneales son 12 pares y todos se originan en el tronco encefálico.", respuesta: false, justificacion: "Falso. Aunque la mayoría se originan en el tronco encefálico, el nervio olfatorio (par I) y el nervio óptico (par II) se originan en el prosencéfalo." },
+            { pregunta: "La duramadre es la meninge más interna, en contacto directo con el tejido nervioso.", respuesta: false, justificacion: "Falso. La duramadre es la más externa y resistente. La meninge más interna, adherida al cerebro y la médula, es la piamadre." },
+            { pregunta: "En la médula espinal, la sustancia gris se localiza en el centro (en forma de H o mariposa) y la sustancia blanca en la periferia.", respuesta: true, justificacion: "Verdadero. A diferencia del cerebro, en la médula espinal los somas neuronales (sustancia gris) están en el interior, mientras que los tractos de axones mielinizados (sustancia blanca) se ubican en el exterior." },
+            { pregunta: "La protuberancia anular (o puente de Varolio) se encuentra entre el bulbo raquídeo y el mesencéfalo.", respuesta: true, justificacion: "Verdadero. La protuberancia es la porción media del tronco encefálico, situada por encima del bulbo raquídeo y por debajo del mesencéfalo." },
+            { pregunta: "El sistema nervioso parasimpático prepara al organismo para respuestas de 'lucha o huida'.", respuesta: false, justificacion: "Falso. Esa es la función del sistema nervioso simpático. El parasimpático promueve respuestas de 'descanso y digestión', conservando energía." },
+            { pregunta: "La corteza auditiva primaria está localizada en el lóbulo parietal.", respuesta: false, justificacion: "Falso. La corteza auditiva primaria se encuentra en la parte superior del lóbulo temporal." },
+            { pregunta: "Los ganglios de la raíz dorsal contienen los somas de las neuronas motoras.", respuesta: false, justificacion: "Falso. Los ganglios de la raíz dorsal contienen los somas de las neuronas sensoriales (aferentes). Los somas de las neuronas motoras (eferentes) se encuentran en el asta ventral de la sustancia gris de la médula espinal." },
+            { pregunta: "El hipocampo es una estructura del lóbulo temporal crucial para la formación de nuevas memorias.", respuesta: true, justificacion: "Verdadero. El hipocampo, localizado en la parte medial del lóbulo temporal, es fundamental para la consolidación de la memoria explícita (episódica y semántica)." },
+            { pregunta: "La cisura de Silvio (o surco lateral) separa el lóbulo temporal de los lóbulos frontal y parietal.", respuesta: true, justificacion: "Verdadero. Esta profunda cisura delimita el borde superior del lóbulo temporal, separándolo de los lóbulos que se encuentran por encima de él." },
+            { pregunta: "El área de Broca, importante para la producción del lenguaje, se encuentra en el lóbulo parietal.", respuesta: false, justificacion: "Falso. El área de Broca se encuentra en el lóbulo frontal, específicamente en la circunvolución frontal inferior, generalmente del hemisferio izquierdo." },
+            { pregunta: "El sistema nervioso entérico, que regula el tubo digestivo, es parte del sistema nervioso central.", respuesta: false, justificacion: "Falso. El sistema nervioso entérico es considerado la tercera división del sistema nervioso autónomo, y por lo tanto, parte del SNP." }
+        ],
+        6: [
+            // Módulo 6: Sistemas Sensoriales: Visión y Audición (Preguntas existentes + nuevas)
+            { pregunta: "Los conos son los fotorreceptores responsables de la visión en condiciones de baja luminosidad.", respuesta: false, justificacion: "Falso. Los bastones son los responsables de la visión en baja luminosidad (visión escotópica). Los conos requieren más luz y son responsables de la visión en color y la alta agudeza visual (visión fotópica)." },
+            { pregunta: "La fóvea es la región de la retina con la mayor densidad de bastones.", respuesta: false, justificacion: "Falso. La fóvea es el punto de máxima agudeza visual y contiene exclusivamente conos. La mayor densidad de bastones se encuentra en la periferia de la retina." },
+            { pregunta: "El nervio óptico está formado por los axones de las células bipolares.", respuesta: false, justificacion: "Falso. El nervio óptico está formado por los axones de las células ganglionares, que son las neuronas de salida de la retina." },
+            { pregunta: "La transducción auditiva ocurre en los huesecillos del oído medio.", respuesta: false, justificacion: "Falso. La transducción auditiva (conversión de la vibración mecánica en señal nerviosa) ocurre en las células ciliadas del órgano de Corti, localizado en la cóclea del oído interno." },
+            { pregunta: "La membrana basilar de la cóclea tiene una organización tonotópica, con las frecuencias altas procesadas en la base y las bajas en el ápice.", respuesta: true, justificacion: "Verdadero. La base de la membrana basilar es estrecha y rígida, vibrando con las frecuencias altas, mientras que el ápice es ancho y flexible, vibrando con las frecuencias bajas." },
+            { pregunta: "La información visual del campo visual derecho es procesada exclusivamente por el hemisferio cerebral derecho.", respuesta: false, justificacion: "Falso. Debido al cruzamiento parcial de las fibras en el quiasma óptico, la información del campo visual derecho es procesada por el hemisferio cerebral izquierdo, y viceversa." },
+            { pregunta: "El volumen de un sonido se codifica por la frecuencia de vibración de la membrana basilar.", respuesta: false, justificacion: "Falso. La frecuencia de vibración codifica el tono del sonido. El volumen (intensidad) se codifica por la amplitud de la vibración de la membrana basilar y la frecuencia de disparo de las neuronas auditivas." },
+            { pregunta: "La acomodación es el proceso por el cual la pupila ajusta su tamaño para regular la entrada de luz.", respuesta: false, justificacion: "Falso. La acomodación es el proceso por el cual el cristalino cambia su forma para enfocar objetos a diferentes distancias. El ajuste del tamaño de la pupila es el reflejo pupilar." },
+            { pregunta: "Las células ciliadas internas son las principales responsables de la transducción auditiva.", respuesta: true, justificacion: "Verdadero. Aunque son menos numerosas que las externas, las células ciliadas internas son los principales receptores sensoriales que envían la mayor parte de la información auditiva al cerebro." },
+            { pregunta: "El punto ciego del ojo corresponde a la fóvea.", respuesta: false, justificacion: "Falso. El punto ciego corresponde al disco óptico, el lugar donde los axones de las células ganglionares salen del ojo para formar el nervio óptico. En esta zona no hay fotorreceptores." },
+            { pregunta: "Existen tres tipos de conos, cada uno sensible a una longitud de onda diferente (rojo, verde, azul).", respuesta: true, justificacion: "Verdadero. La visión tricromática humana se basa en la actividad de tres tipos de conos, cuyas diferentes sensibilidades a la luz de distintas longitudes de onda nos permiten percibir todo el espectro de colores." },
+            { pregunta: "La trompa de Eustaquio conecta el oído medio con la faringe para igualar la presión del aire.", respuesta: true, justificacion: "Verdadero. Esta conexión es crucial para que el tímpano pueda vibrar libremente, ya que iguala la presión del oído medio con la presión atmosférica exterior." },
+            { pregunta: "La ruta visual dorsal ('dónde') se especializa en el reconocimiento de objetos.", respuesta: false, justificacion: "Falso. La ruta dorsal se especializa en procesar la información espacial y guiar el movimiento ('dónde' o 'cómo'). La ruta ventral ('qué') es la que se encarga del reconocimiento de objetos." },
+            { pregunta: "Las células ciliadas se despolarizan por la entrada de iones de Sodio (Na+).", respuesta: false, justificacion: "Falso. Las células ciliadas auditivas y vestibulares se encuentran en un medio rico en Potasio (K+), la endolinfa. Su despolarización se produce por la entrada de K+ a través de canales mecánicos en los cilios." },
+            { pregunta: "La corteza auditiva primaria se localiza en el lóbulo occipital.", respuesta: false, justificacion: "Falso. La corteza auditiva primaria se encuentra en el lóbulo temporal." },
+            { pregunta: "La luz provoca una despolarización en los fotorreceptores.", respuesta: false, justificacion: "Falso. De manera contraintuitiva, los fotorreceptores se hiperpolarizan (se vuelven más negativos) en respuesta a la luz, lo que reduce su liberación de neurotransmisor (glutamato)." },
+            { pregunta: "Los huesecillos del oído (martillo, yunque y estribo) amplifican la presión de las ondas sonoras.", respuesta: true, justificacion: "Verdadero. Actúan como un sistema de palancas que concentra la fuerza de la vibración del tímpano (de área grande) sobre la ventana oval (de área pequeña), amplificando la presión para transmitirla eficientemente al líquido del oído interno." },
+            { pregunta: "Las células ganglionares de centro-ON se excitan cuando la luz incide en la periferia de su campo receptivo.", respuesta: false, justificacion: "Falso. Las células de centro-ON se excitan (aumentan su tasa de disparo) cuando la luz incide en el centro de su campo receptivo y se inhiben cuando incide en la periferia." },
+            { pregunta: "La diferencia de tiempo interaural es una clave importante para localizar sonidos de alta frecuencia.", respuesta: false, justificacion: "Falso. La diferencia de tiempo interaural (la diferencia en el tiempo de llegada del sonido a cada oído) es más útil para localizar sonidos de baja frecuencia. Para las altas frecuencias, la diferencia de intensidad interaural (la 'sombra' acústica de la cabeza) es la clave principal." },
+            { pregunta: "La miopía ocurre cuando el globo ocular es demasiado corto y la imagen se enfoca detrás de la retina.", respuesta: false, justificacion: "Falso. La miopía ocurre cuando el globo ocular es demasiado largo y la imagen se enfoca delante de la retina. La descripción corresponde a la hipermetropía." },
+            { pregunta: "La corteza visual primaria tiene una organización retinotópica.", respuesta: true, justificacion: "Verdadero. Esto significa que puntos adyacentes en la retina son procesados por neuronas adyacentes en la corteza visual primaria, creando un 'mapa' del campo visual en la corteza." },
+            { pregunta: "El humor vítreo es un líquido que nutre al cristalino y se encuentra en la cámara anterior del ojo.", respuesta: false, justificacion: "Falso. El humor vítreo es la sustancia gelatinosa que llena la gran cavidad posterior del ojo, detrás del cristalino. El líquido que nutre al cristalino en la cámara anterior es el humor acuoso." },
+            { pregunta: "El timbre de un sonido es el correlato perceptual de la amplitud de la onda sonora.", respuesta: false, justificacion: "Falso. El timbre es el correlato de la complejidad de la onda (la mezcla de armónicos). La amplitud de la onda corresponde a la percepción del volumen o intensidad." }
+        ],
+        7: [
+            // Módulo 7: Sistemas Sensoriales: Somatosensorial y Vestibular (Preguntas existentes + nuevas)
+            { pregunta: "El sistema vestibular se localiza en el oído medio.", respuesta: false, justificacion: "Falso. El sistema vestibular, responsable del equilibrio y la orientación espacial, se encuentra en el oído interno, junto a la cóclea." },
+            { pregunta: "Los canales semicirculares detectan la aceleración lineal y la gravedad.", respuesta: false, justificacion: "Falso. Los canales semicirculares detectan la aceleración angular (rotación de la cabeza). La aceleración lineal y la gravedad son detectadas por los órganos otolíticos (utrículo y sáculo)." },
+            { pregunta: "Los corpúsculos de Pacini son mecanorreceptores de adaptación rápida sensibles a la vibración.", respuesta: true, justificacion: "Verdadero. Estos receptores encapsulados se encuentran en las capas profundas de la piel y responden a estímulos de vibración de alta frecuencia, adaptándose rápidamente." },
+            { pregunta: "Los nociceptores son receptores especializados que detectan la temperatura.", respuesta: false, justificacion: "Falso. Los nociceptores son receptores especializados en detectar estímulos potencialmente dañinos, lo que da lugar a la sensación de dolor. Los termorreceptores detectan la temperatura." },
+            { pregunta: "La corteza somatosensorial primaria tiene una organización somatotópica.", respuesta: true, justificacion: "Verdadero. Existe un mapa del cuerpo (homúnculo sensorial) en la corteza somatosensorial, donde áreas adyacentes del cuerpo están representadas por áreas adyacentes de la corteza." },
+            { pregunta: "El utrículo y el sáculo son los órganos responsables de detectar la rotación de la cabeza.", respuesta: false, justificacion: "Falso. El utrículo y el sáculo (órganos otolíticos) detectan la aceleración lineal y la posición de la cabeza con respecto a la gravedad. La rotación es detectada por los canales semicirculares." },
+            { pregunta: "Las vías del dolor y la temperatura decusan (cruzan al lado contrario) a nivel del bulbo raquídeo.", respuesta: false, justificacion: "Falso. Las vías del dolor y la temperatura (sistema anterolateral) decusan a nivel de la médula espinal, poco después de entrar en ella. Las vías del tacto fino y la propiocepción decusan más arriba, en el bulbo." },
+            { pregunta: "Los otolitos son cristales de carbonato de calcio que se encuentran en los canales semicirculares.", respuesta: false, justificacion: "Falso. Los otolitos se encuentran en las máculas del utrículo y el sáculo. Su inercia y peso sobre las células ciliadas permite detectar la aceleración lineal y la gravedad." },
+            { pregunta: "La cinestesia nos informa sobre la posición y el movimiento de nuestras extremidades.", respuesta: true, justificacion: "Verdadero. La cinestesia, o propiocepción, es el sentido que nos informa de la posición relativa de las partes del cuerpo y del esfuerzo muscular, gracias a receptores en músculos y articulaciones." },
+            { pregunta: "Los discos de Merkel son receptores de adaptación rápida para el tacto grueso.", respuesta: false, justificacion: "Falso. Los discos de Merkel son receptores de adaptación lenta, especializados en detectar detalles finos y texturas a través de la presión sostenida." },
+            { pregunta: "El reflejo vestíbulo-ocular ayuda a mantener la estabilidad de la mirada cuando la cabeza se mueve.", respuesta: true, justificacion: "Verdadero. Este reflejo produce movimientos oculares compensatorios en dirección opuesta al movimiento de la cabeza, lo que permite mantener las imágenes estables en la retina." },
+            { pregunta: "El área de la corteza somatosensorial dedicada a las manos es más pequeña que la dedicada a la espalda.", respuesta: false, justificacion: "Falso. El tamaño de la representación cortical es proporcional a la densidad de receptores y la importancia funcional. Las manos, al ser muy sensibles, tienen una representación cortical mucho mayor que la espalda." },
+            { pregunta: "Las células ciliadas del sistema vestibular se despolarizan por la entrada de iones de Sodio (Na+).", respuesta: false, justificacion: "Falso. Al igual que en el sistema auditivo, las células ciliadas vestibulares se despolarizan por la entrada de Potasio (K+) desde la endolinfa." },
+            { pregunta: "Los termorreceptores son terminaciones nerviosas encapsuladas.", respuesta: false, justificacion: "Falso. Tanto los termorreceptores como la mayoría de los nociceptores son terminaciones nerviosas libres (no encapsuladas)." },
+            { pregunta: "Los tres canales semicirculares de cada oído están orientados en planos paralelos entre sí.", respuesta: false, justificacion: "Falso. Están orientados en tres planos aproximadamente ortogonales (perpendiculares) entre sí, lo que les permite detectar la rotación de la cabeza en cualquier dirección." },
+            { pregunta: "El dolor referido ocurre cuando el dolor de un órgano interno se percibe en una zona de la piel.", respuesta: true, justificacion: "Verdadero. Esto sucede porque las vías sensoriales de los órganos internos y de la piel convergen en las mismas neuronas de la médula espinal, y el cerebro interpreta erróneamente el origen de la señal." },
+            { pregunta: "Los husos musculares son receptores que detectan la tensión muscular.", respuesta: false, justificacion: "Falso. Los husos musculares detectan cambios en la longitud (estiramiento) del músculo. La tensión es detectada por los órganos tendinosos de Golgi." },
+            { pregunta: "El mareo por movimiento es causado por una infección en el oído interno.", respuesta: false, justificacion: "Falso. El mareo por movimiento se debe a un conflicto entre la información del sistema visual y la del sistema vestibular (por ejemplo, leer en un coche en movimiento)." },
+            { pregunta: "La información somatosensorial no hace relevo en el tálamo.", respuesta: false, justificacion: "Falso. Toda la información somatosensorial del cuerpo hace sinapsis en el tálamo (en el complejo ventrobasal) antes de ser proyectada a la corteza somatosensorial primaria." },
+            { pregunta: "Los corpúsculos de Ruffini son sensibles al estiramiento de la piel y son de adaptación lenta.", respuesta: true, justificacion: "Verdadero. Estos receptores responden a la deformación y estiramiento sostenido de la piel, contribuyendo a la percepción de la forma de los objetos y la posición de los dedos." },
+            { pregunta: "La corteza vestibular primaria se encuentra en el lóbulo occipital.", respuesta: false, justificacion: "Falso. Aunque su localización exacta es debatida, se cree que la corteza vestibular primaria se encuentra en la unión del lóbulo parietal y la ínsula." },
+            { pregunta: "La mínima distancia entre dos estímulos mecánicos que podemos distinguir es la misma en toda la piel del cuerpo.", respuesta: false, justificacion: "Falso. Esta distancia varía enormemente. Es muy pequeña en las yemas de los dedos (alta agudeza táctil) y muy grande en la espalda, debido a la diferencia en la densidad de receptores." },
+            { pregunta: "Los dermatomas son áreas de la piel inervadas por un único nervio craneal.", respuesta: false, justificacion: "Falso. Un dermatoma es un área de la piel inervada por las fibras nerviosas sensoriales de un único nervio espinal (raquídeo)." }
+        ],
+        8: [
+            // Módulo 8: Control Motor y Sistema Nervioso Autónomo (Preguntas existentes + nuevas)
+            { pregunta: "La corteza motora primaria se encuentra en el lóbulo parietal, justo detrás de la cisura de Rolando.", respuesta: false, justificacion: "Falso. La corteza motora primaria se encuentra en el lóbulo frontal, en la circunvolución precentral, justo delante de la cisura de Rolando." },
+            { pregunta: "El sistema nervioso simpático utiliza acetilcolina como neurotransmisor en la sinapsis con el órgano efector.", respuesta: false, justificacion: "Falso. El sistema simpático utiliza principalmente noradrenalina (norepinefrina) en la unión con el órgano efector. La acetilcolina es usada por el sistema parasimpático." },
+            { pregunta: "Los ganglios basales son los encargados de iniciar los movimientos voluntarios.", respuesta: true, justificacion: "Verdadero. Los ganglios basales desempeñan un papel crucial en la selección e iniciación de movimientos voluntarios, actuando como una especie de 'puerta' que libera los programas motores deseados." },
+            { pregunta: "El cerebelo es esencial para la coordinación, el equilibrio y el aprendizaje motor.", respuesta: true, justificacion: "Verdadero. El cerebelo ajusta y refina los movimientos, compara la intención motora con la ejecución real y corrige los errores, siendo fundamental para la fluidez y precisión motora." },
+            { pregunta: "El sistema nervioso parasimpático aumenta la frecuencia cardíaca y la presión arterial.", respuesta: false, justificacion: "Falso. Esa es la función del sistema simpático. El sistema parasimpático disminuye la frecuencia cardíaca y promueve funciones de 'descanso y digestión'." },
+            { pregunta: "Una unidad motora está compuesta por una neurona motora y todas las fibras musculares que inerva.", respuesta: true, justificacion: "Verdadero. Esta es la unidad funcional básica del control motor. La activación de una neurona motora provoca la contracción de todas las fibras musculares a las que está conectada." },
+            { pregunta: "La enfermedad de Parkinson se asocia con una degeneración de neuronas dopaminérgicas en la sustancia negra.", respuesta: true, justificacion: "Verdadero. La pérdida de neuronas que producen dopamina en la sustancia negra (que proyecta a los ganglios basales) altera el equilibrio de los circuitos motores, causando los síntomas característicos como temblor y rigidez." },
+            { pregunta: "El sistema nervioso autónomo controla la contracción de los músculos esqueléticos.", respuesta: false, justificacion: "Falso. El sistema nervioso autónomo controla el músculo liso, el músculo cardíaco y las glándulas. Los músculos esqueléticos son controlados por el sistema nervioso somático." },
+            { pregunta: "La corteza premotora está implicada en la planificación de los movimientos.", respuesta: true, justificacion: "Verdadero. La corteza premotora y el área motora suplementaria están involucradas en la preparación y secuenciación de los movimientos, antes de que la orden final sea enviada desde la corteza motora primaria." },
+            { pregunta: "En el sistema nervioso simpático, las fibras preganglionares son largas y las postganglionares son cortas.", respuesta: false, justificacion: "Falso. Es al revés. En el sistema simpático, las fibras preganglionares son cortas (hacen sinapsis en la cadena ganglionar simpática cerca de la médula), y las postganglionares son largas para alcanzar los órganos efectores." },
+            { pregunta: "La apraxia es una pérdida de la fuerza muscular que impide el movimiento.", respuesta: false, justificacion: "Falso. La apraxia es la incapacidad de realizar movimientos aprendidos y con un propósito, a pesar de tener la capacidad física (fuerza y coordinación) y la voluntad de hacerlo. Es un trastorno de la planificación motora." },
+            { pregunta: "El reflejo miotático (de estiramiento) es un reflejo monosináptico.", respuesta: true, justificacion: "Verdadero. Es el reflejo más simple, ya que implica una sola sinapsis en la médula espinal, directamente entre la neurona sensorial (del huso muscular) y la neurona motora que contrae el mismo músculo." },
+            { pregunta: "El sistema nervioso entérico es una división del sistema nervioso somático.", respuesta: false, justificacion: "Falso. El sistema nervioso entérico, que controla el tracto gastrointestinal, es considerado la tercera división del sistema nervioso autónomo, junto con el simpático y el parasimpático." },
+            { pregunta: "Las neuronas espejo se activan tanto al realizar una acción como al observar a otro realizar esa misma acción.", respuesta: true, justificacion: "Verdadero. Se cree que estas neuronas, encontradas en áreas premotoras y parietales, son la base de la imitación, el aprendizaje por observación y la empatía." },
+            { pregunta: "El fascículo corticoespinal es la principal vía motora para los movimientos finos y voluntarios de las extremidades.", respuesta: true, justificacion: "Verdadero. También conocido como vía piramidal, este tracto desciende directamente desde la corteza motora a la médula espinal y es crucial para el control preciso de los movimientos, especialmente de las manos y los dedos." },
+            { pregunta: "La activación del sistema parasimpático provoca la dilatación de las pupilas.", respuesta: false, justificacion: "Falso. El sistema parasimpático provoca la contracción (miosis) de las pupilas. La dilatación (midriasis) es una respuesta simpática." },
+            { pregunta: "Los husos musculares y los órganos tendinosos de Golgi son receptores sensoriales que informan sobre el estado de los músculos.", respuesta: true, justificacion: "Verdadero. Son propioceptores. Los husos musculares informan sobre la longitud y la velocidad de estiramiento del músculo, mientras que los órganos tendinosos de Golgi informan sobre la tensión muscular." },
+            { pregunta: "La mayoría de las neuronas preganglionares del sistema parasimpático se originan en la región torácica de la médula espinal.", respuesta: false, justificacion: "Falso. El sistema parasimpático tiene un origen craneosacro. Sus neuronas preganglionares se originan en el tronco encefálico (asociadas a nervios craneales) y en la región sacra de la médula espinal." },
+            { pregunta: "Una lesión en el cerebelo produce parálisis.", respuesta: false, justificacion: "Falso. Una lesión cerebelosa no causa parálisis, sino ataxia, que es una pérdida de coordinación, equilibrio y precisión en los movimientos (movimientos torpes, temblor de intención, etc.)." },
+            { pregunta: "El sistema simpático y el parasimpático siempre tienen efectos opuestos.", respuesta: false, justificacion: "Falso. Aunque a menudo son antagónicos, en algunas funciones pueden actuar de forma complementaria o sinérgica, como en la respuesta sexual." },
+            { pregunta: "La representación del cuerpo en la corteza motora primaria (homúnculo motor) es proporcional al tamaño de las partes del cuerpo.", respuesta: false, justificacion: "Falso. La representación es proporcional a la complejidad y finura del control motor requerido. Por eso, las manos y la cara tienen áreas desproporcionadamente grandes." },
+            { pregunta: "El neurotransmisor en la unión neuromuscular es la dopamina.", respuesta: false, justificacion: "Falso. El neurotransmisor liberado por las neuronas motoras en la unión neuromuscular para contraer el músculo esquelético es la acetilcolina." },
+            { pregunta: "Los movimientos balísticos son movimientos lentos que pueden ser corregidos sobre la marcha.", respuesta: false, justificacion: "Falso. Los movimientos balísticos son movimientos muy rápidos (como un lanzamiento) que se ejecutan como una unidad preprogramada y no pueden ser corregidos una vez iniciados." }
+        ],
+        9: [
+            // Módulo 9: Hipotálamo, Homeostasis y Estrés (Preguntas existentes + nuevas)
+            { pregunta: "El hipotálamo es parte del lóbulo frontal y controla principalmente el lenguaje.", respuesta: false, justificacion: "Falso. El hipotálamo es una estructura del diencéfalo, situada debajo del tálamo. Su función principal es la regulación de la homeostasis y la conexión entre el sistema nervioso y el endocrino, no el lenguaje." },
+            { pregunta: "La homeostasis es el proceso de mantener las variables del medio interno en un valor fijo y constante.", respuesta: false, justificacion: "Falso. La homeostasis consiste en mantener las variables del medio interno (como la temperatura o el pH) dentro de un rango de valores óptimo y estable, no en un punto fijo. Permite una flexibilidad dinámica." },
+            { pregunta: "El hipotálamo controla la glándula hipófisis (o pituitaria).", respuesta: true, justificacion: "Verdadero. El hipotálamo regula la secreción de hormonas de la hipófisis mediante factores liberadores e inhibidores (para la adenohipófisis) y mediante proyecciones neuronales directas (a la neurohipófisis)." },
+            { pregunta: "La respuesta al estrés de 'lucha o huida' está mediada principalmente por el sistema nervioso parasimpático.", respuesta: false, justificacion: "Falso. La respuesta rápida de 'lucha o huida' es una activación masiva del sistema nervioso simpático, que moviliza los recursos energéticos del cuerpo para una acción inmediata." },
+            { pregunta: "La sed osmótica se desencadena por una disminución del volumen sanguíneo.", respuesta: false, justificacion: "Falso. La sed osmótica se desencadena por un aumento en la concentración de solutos (sales) en el líquido extracelular. La sed por disminución del volumen sanguíneo se llama sed volumétrica o hipovolémica." },
+            { pregunta: "El cortisol es conocido como la 'hormona del estrés' y es liberado por la médula suprarrenal.", respuesta: false, justificacion: "Falso. Aunque el cortisol es la principal hormona del estrés, es liberado por la corteza de la glándula suprarrenal, no por la médula. La médula suprarrenal libera adrenalina y noradrenalina." },
+            { pregunta: "El núcleo supraquiasmático del hipotálamo funciona como el reloj biológico principal del cuerpo.", respuesta: true, justificacion: "Verdadero. Este núcleo recibe información sobre la luz desde la retina y sincroniza los ritmos circadianos del cuerpo, como el ciclo sueño-vigilia, con el ciclo de día y noche." },
+            { pregunta: "La hormona antidiurética (vasopresina) es producida y liberada por la adenohipófisis (hipófisis anterior).", respuesta: false, justificacion: "Falso. La vasopresina es producida por neuronas en el hipotálamo y liberada al torrente sanguíneo desde la neurohipófisis (hipófisis posterior)." },
+            { pregunta: "El hipotálamo lateral está implicado en la sensación de saciedad.", respuesta: false, justificacion: "Falso. El hipotálamo lateral se asocia con el inicio de la ingesta (hambre). La sensación de saciedad está más relacionada con el núcleo ventromedial del hipotálamo." },
+            { pregunta: "La regulación de la temperatura corporal es una función homeostática clave del hipotálamo.", respuesta: true, justificacion: "Verdadero. El hipotálamo contiene neuronas sensibles a la temperatura de la sangre y actúa como un termostato, desencadenando respuestas como la sudoración o el temblor para mantener la temperatura corporal estable." },
+            { pregunta: "El eje Hipotálamo-Hipofisario-Adrenal (HHA) se activa crónicamente durante el reposo.", respuesta: false, justificacion: "Falso. El eje HHA es el principal sistema neuroendocrino de respuesta al estrés. Su activación conduce a la liberación de cortisol y se activa precisamente en situaciones de estrés, no de reposo." },
+            { pregunta: "La oxitocina, liberada por la neurohipófisis, está implicada en las contracciones uterinas durante el parto.", respuesta: true, justificacion: "Verdadero. La oxitocina juega un papel fundamental en el parto, estimulando las contracciones del útero, y también en la lactancia y la formación de vínculos sociales." },
+            { pregunta: "Las respuestas homeostáticas son únicamente fisiológicas y no incluyen componentes conductuales.", respuesta: false, justificacion: "Falso. La homeostasis integra respuestas fisiológicas (p. ej., sudar) y conductuales (p. ej., buscar sombra, beber agua, abrigarse) para mantener el equilibrio interno." },
+            { pregunta: "La adenohipófisis está conectada al hipotálamo mediante un sistema de vasos sanguíneos llamado sistema porta hipofisario.", respuesta: true, justificacion: "Verdadero. A través de este sistema, el hipotálamo libera hormonas reguladoras que viajan una corta distancia para controlar las células endocrinas de la adenohipófisis." },
+            { pregunta: "El estrés crónico puede tener efectos perjudiciales para la salud, como la supresión del sistema inmune.", respuesta: true, justificacion: "Verdadero. Mientras que la respuesta al estrés agudo es adaptativa, la activación prolongada del eje HHA y la exposición crónica al cortisol pueden debilitar el sistema inmunitario, afectar la memoria y aumentar el riesgo de diversas enfermedades." },
+            { pregunta: "El hipotálamo no tiene forma de detectar el estado interno del cuerpo, solo responde a señales de la corteza.", respuesta: false, justificacion: "Falso. El hipotálamo contiene numerosos receptores que monitorizan directamente variables de la sangre, como la temperatura, la osmolaridad, la glucosa y los niveles hormonales." },
+            { pregunta: "La prolactina es una hormona liberada por la neurohipófisis que estimula la producción de leche.", respuesta: false, justificacion: "Falso. La prolactina estimula la producción de leche, pero es liberada por la adenohipófisis (hipófisis anterior), no por la neurohipófisis." },
+            { pregunta: "Los termorreceptores en la piel no envían información al hipotálamo.", respuesta: false, justificacion: "Falso. La información de los termorreceptores periféricos llega al hipotálamo, permitiendo respuestas anticipatorias (p. ej., empezar a temblar antes de que la temperatura central baje) que complementan la detección de la temperatura de la sangre." },
+            { pregunta: "Una lesión en el núcleo ventromedial del hipotálamo puede causar que un animal deje de comer.", respuesta: false, justificacion: "Falso. Una lesión en el núcleo ventromedial (centro de la saciedad) puede causar hiperfagia (comer en exceso) y obesidad. La lesión que causa la negativa a comer (afagia) se localiza en el hipotálamo lateral." },
+            { pregunta: "La renina, producida por los riñones, inicia una cascada que lleva a la producción de angiotensina II, la cual estimula la sed.", respuesta: true, justificacion: "Verdadero. Este es el mecanismo principal de la sed volumétrica. La angiotensina II actúa sobre el hipotálamo para inducir la sed y la liberación de vasopresina." },
+            { pregunta: "El hipotálamo forma parte del sistema límbico.", respuesta: true, justificacion: "Verdadero. El hipotálamo es una estructura clave del sistema límbico, integrando las respuestas emocionales con las respuestas autónomas y endocrinas del cuerpo." },
+            { pregunta: "La neurohipófisis sintetiza las hormonas que libera.", respuesta: false, justificacion: "Falso. La neurohipófisis no sintetiza hormonas; almacena y libera hormonas (vasopresina y oxitocina) que son producidas en los somas de neuronas ubicadas en el hipotálamo." },
+            { pregunta: "El hipotálamo controla la reproducción únicamente a través de la liberación de hormonas.", respuesta: false, justificacion: "Falso. Además del control hormonal (eje hipotálamo-hipofisario-gonadal), el hipotálamo también regula los comportamientos sexuales y maternales, que son componentes conductuales de la reproducción." }
+        ],
+        10: [
+            // Módulo 10: Emociones y Sistema Límbico (Preguntas existentes + nuevas)
+            { pregunta: "El sistema límbico es una única estructura anatómica bien definida en el centro del cerebro.", respuesta: false, justificacion: "Falso. El sistema límbico no es una estructura única, sino un conjunto de estructuras corticales y subcorticales interconectadas (como la amígdala, el hipocampo, el hipotálamo y la corteza cingulada) que funcionan como un sistema funcional para la emoción y la memoria." },
+            { pregunta: "La amígdala es una estructura clave para el procesamiento del miedo y el aprendizaje de respuestas de temor.", respuesta: true, justificacion: "Verdadero. La amígdala juega un papel central en la evaluación de la relevancia emocional de los estímulos, especialmente las amenazas, y en la formación de memorias asociadas al miedo (condicionamiento del miedo)." },
+            { pregunta: "Según la teoría de James-Lange, primero sentimos la emoción (miedo) y luego ocurren las respuestas corporales (corazón acelerado).", respuesta: false, justificacion: "Falso. La teoría de James-Lange propone lo contrario: primero ocurren las respuestas fisiológicas periféricas ('corremos de un oso'), y la percepción de estos cambios corporales es lo que constituye la experiencia del sentimiento ('sentimos miedo porque corremos')." },
+            { pregunta: "El hipocampo es la principal estructura del sistema límbico para la generación de respuestas emocionales.", respuesta: false, justificacion: "Falso. Aunque es parte del sistema límbico, la función principal del hipocampo es la formación de memorias explícitas. La amígdala es la estructura más directamente implicada en la generación de respuestas emocionales, especialmente el miedo." },
+            { pregunta: "La corteza prefrontal, especialmente su porción ventromedial, está implicada en la regulación de las emociones y la toma de decisiones.", respuesta: true, justificacion: "Verdadero. Esta área cortical es crucial para inhibir respuestas emocionales impulsivas, evaluar las consecuencias a largo plazo de las acciones y guiar el comportamiento socialmente apropiado." },
+            { pregunta: "Las expresiones faciales de las emociones básicas (alegría, tristeza, miedo, etc.) son aprendidas y varían completamente entre culturas.", respuesta: false, justificacion: "Falso. La investigación de Paul Ekman y otros sugiere que las expresiones faciales para un conjunto de emociones básicas son universales y tienen una base biológica innata, aunque las reglas sobre cuándo y cómo mostrarlas (reglas de exhibición) sí varían culturalmente." },
+            { pregunta: "El hipotálamo es una importante vía de salida del sistema límbico para las respuestas autónomas y endocrinas de la emoción.", respuesta: true, justificacion: "Verdadero. Estructuras como la amígdala proyectan al hipotálamo para orquestar las respuestas fisiológicas de la emoción, como los cambios en la frecuencia cardíaca (vía sistema autónomo) o la liberación de hormonas del estrés (vía sistema endocrino)." },
+            { pregunta: "Una lesión en la amígdala puede llevar a una incapacidad para reconocer expresiones de miedo en los demás.", respuesta: true, justificacion: "Verdadero. Pacientes con lesiones bilaterales en la amígdala, como el caso de S.M., muestran un déficit específico en el reconocimiento y la experiencia del miedo, tanto en sí mismos como en los rostros de otras personas." },
+            { pregunta: "La teoría de Cannon-Bard postula que la experiencia emocional y la respuesta fisiológica son procesos independientes que ocurren simultáneamente.", respuesta: true, justificacion: "Verdadero. En contraposición a James-Lange, esta teoría propone que un estímulo emocional activa el tálamo, que a su vez envía señales simultáneamente a la corteza (para la experiencia del sentimiento) y al hipotálamo (para la respuesta corporal)." },
+            { pregunta: "El sistema límbico no tiene ninguna conexión con las áreas corticales superiores.", respuesta: false, justificacion: "Falso. Existen extensas conexiones recíprocas entre el sistema límbico y las áreas de la neocorteza, especialmente la corteza prefrontal. Esta interacción es fundamental para la regulación cognitiva de la emoción." },
+            { pregunta: "La corteza cingulada anterior está implicada en la experiencia consciente de las emociones y en la monitorización de conflictos.", respuesta: true, justificacion: "Verdadero. Esta parte de la corteza límbica se activa durante diversas experiencias emocionales y se cree que juega un papel en la integración de la información emocional y cognitiva, así como en la detección de errores o conflictos." },
+            { pregunta: "El sentimiento es simplemente la activación del sistema nervioso simpático.", respuesta: false, justificacion: "Falso. El sentimiento es la experiencia subjetiva y consciente de una emoción. La activación simpática es solo uno de los componentes fisiológicos de la respuesta emocional, pero no constituye el sentimiento en sí mismo." },
+            { pregunta: "La amígdala recibe información sensorial procesada directamente desde la corteza, pero también información más rápida y menos procesada desde el tálamo.", respuesta: true, justificacion: "Verdadero. Se postula una 'vía baja' (tálamo-amígdala) para una respuesta rápida e inconsciente a posibles amenazas, y una 'vía alta' (tálamo-corteza-amígdala) para una evaluación más detallada y consciente." },
+            { pregunta: "Las emociones no juegan ningún papel en la toma de decisiones racional.", respuesta: false, justificacion: "Falso. La hipótesis del marcador somático de Damasio sugiere que las señales emocionales (marcadores somáticos) son cruciales para guiar la toma de decisiones de manera eficiente y ventajosa, especialmente en situaciones complejas." },
+            { pregunta: "El núcleo accumbens, parte de los ganglios basales, está implicado en la experiencia del placer y la recompensa.", respuesta: true, justificacion: "Verdadero. Esta estructura es un componente central del circuito de recompensa del cerebro, y su activación, a menudo mediada por la dopamina, es fundamental para la sensación de placer y la motivación." },
+            { pregunta: "La ira y la agresión están controladas exclusivamente por la amígdala.", respuesta: false, justificacion: "Falso. Si bien la amígdala está implicada, la agresión es un comportamiento complejo regulado por una red de estructuras que incluye el hipotálamo, la sustancia gris periacueductal y la corteza prefrontal, que ejerce un control inhibitorio." },
+            { pregunta: "El condicionamiento del miedo es un proceso de aprendizaje implícito que depende del cerebelo.", respuesta: false, justificacion: "Falso. El condicionamiento del miedo es un tipo de aprendizaje asociativo implícito, pero la estructura clave para su adquisición y expresión es la amígdala, no el cerebelo (que está más implicado en el condicionamiento motor)." },
+            { pregunta: "El hemisferio derecho parece tener un papel más dominante en el procesamiento y la expresión de las emociones que el izquierdo.", respuesta: true, justificacion: "Verdadero. Aunque ambos hemisferios participan, la evidencia sugiere una especialización del hemisferio derecho para procesar el tono emocional del lenguaje, reconocer expresiones faciales y mediar en las respuestas emocionales negativas." },
+            { pregunta: "La ínsula es una región cortical implicada en la interocepción, es decir, la percepción de los estados internos del cuerpo.", respuesta: true, justificacion: "Verdadero. La corteza insular integra señales de los órganos internos y se considera crucial para la conciencia de los estados corporales, lo que forma la base de muchas experiencias emocionales subjetivas (p. ej., 'un nudo en el estómago')." },
+            { pregunta: "La serotonina está implicada en la regulación del estado de ánimo y la agresión.", respuesta: true, justificacion: "Verdadero. Niveles bajos de serotonina se han asociado con un aumento de la impulsividad y la agresión, y muchos fármacos antidepresivos actúan sobre el sistema serotoninérgico para regular el estado de ánimo." },
+            { pregunta: "El circuito de Papez fue la primera propuesta de un circuito neuronal para las emociones e incluía el hipocampo.", respuesta: true, justificacion: "Verdadero. Propuesto en 1937, el circuito de Papez conectaba el hipotálamo con la corteza cingulada a través del tálamo anterior y el hipocampo, sentando las bases para el concepto posterior de sistema límbico." },
+            { pregunta: "Las emociones se clasifican en primarias (innatas) y secundarias (sociales).", respuesta: true, justificacion: "Verdadero. Las emociones primarias como el miedo o la alegría son consideradas universales e innatas. Las secundarias o sociales, como la culpa o el orgullo, son más complejas y dependen del aprendizaje social y la autoconciencia." },
+            { pregunta: "La prosopagnosia es la incapacidad de sentir emociones.", respuesta: false, justificacion: "Falso. La prosopagnosia es la incapacidad de reconocer rostros. La incapacidad de sentir emociones se conoce más comúnmente como anhedonia (para el placer) o alexitimia (dificultad para identificar y describir emociones)." }
+        ],
+        11: [
+            // Módulo 11: Aprendizaje, Memoria y Sueño (Preguntas existentes + nuevas)
+            { pregunta: "La memoria explícita (declarativa) y la memoria implícita (no declarativa) dependen de los mismos sistemas cerebrales.", respuesta: false, justificacion: "Falso. Son sistemas distintos. La memoria explícita (hechos, eventos) depende del lóbulo temporal medial (incluyendo el hipocampo), mientras que la memoria implícita (habilidades, hábitos) depende de estructuras como los ganglios basales y el cerebelo." },
+            { pregunta: "El hipocampo es el lugar donde se almacenan permanentemente los recuerdos a largo plazo.", respuesta: false, justificacion: "Falso. El hipocampo es crucial para la consolidación de nuevos recuerdos explícitos, pero se cree que el almacenamiento a largo plazo ocurre de forma distribuida en la neocorteza. El hipocampo actúa como un indexador temporal." },
+            { pregunta: "El sueño REM se caracteriza por una actividad cerebral similar a la de la vigilia y una atonía muscular.", respuesta: true, justificacion: "Verdadero. El sueño REM es 'paradójico' porque el electroencefalograma (EEG) muestra una actividad rápida y de bajo voltaje, similar a la vigilia, pero los músculos esqueléticos (excepto los oculares y respiratorios) están paralizados." },
+            { pregunta: "El aprendizaje de una habilidad motora, como andar en bicicleta, es un ejemplo de memoria explícita.", respuesta: false, justificacion: "Falso. Es un ejemplo clásico de memoria implícita o procedimental. Se adquiere a través de la práctica y se expresa a través del rendimiento, sin necesidad de un recuerdo consciente de cómo se hace." },
+            { pregunta: "La amnesia anterógrada es la incapacidad de recordar eventos que ocurrieron antes de la lesión cerebral.", respuesta: false, justificacion: "Falso. La amnesia anterógrada es la incapacidad de formar nuevos recuerdos después de la lesión. La incapacidad para recordar eventos pasados es la amnesia retrógrada." },
+            { pregunta: "El sueño de ondas lentas (fases N2 y N3) es importante para la consolidación de la memoria declarativa.", respuesta: true, justificacion: "Verdadero. Durante el sueño de ondas lentas, se cree que ocurre un diálogo entre el hipocampo y la corteza que transfiere y fortalece las trazas de memoria, haciéndolas más estables y duraderas." },
+            { pregunta: "El condicionamiento clásico, como el de los perros de Pavlov, es un tipo de aprendizaje no asociativo.", respuesta: false, justificacion: "Falso. Es un tipo de aprendizaje asociativo, ya que el organismo aprende a asociar dos estímulos: un estímulo condicionado (campana) con un estímulo incondicionado (comida)." },
+            { pregunta: "El reloj biológico circadiano principal en los mamíferos se encuentra en la glándula pineal.", respuesta: false, justificacion: "Falso. El reloj principal es el núcleo supraquiasmático (NSQ) del hipotálamo. La glándula pineal es controlada por el NSQ y se encarga de secretar melatonina durante la noche." },
+            { pregunta: "La potenciación a largo plazo (PLP) es un mecanismo de plasticidad sináptica que se cree que subyace al aprendizaje y la memoria.", respuesta: true, justificacion: "Verdadero. La PLP es un fortalecimiento duradero de la eficacia sináptica como resultado de una actividad neuronal reciente. Es un modelo celular ampliamente estudiado para la formación de recuerdos." },
+            { pregunta: "La memoria de trabajo (o a corto plazo) tiene una capacidad de almacenamiento prácticamente ilimitada.", respuesta: false, justificacion: "Falso. La memoria de trabajo tiene una capacidad muy limitada (clásicamente, 7 ± 2 ítems) y una duración breve. Es un sistema para mantener y manipular información activamente durante un corto período de tiempo." },
+            { pregunta: "La melatonina es una hormona que promueve la vigilia.", respuesta: false, justificacion: "Falso. La melatonina es la 'hormona de la oscuridad'. Su secreción aumenta por la noche y promueve el sueño, señalando al cuerpo que es hora de descansar." },
+            { pregunta: "La habituación es un aumento en la respuesta a un estímulo repetido.", respuesta: false, justificacion: "Falso. La habituación es la forma más simple de aprendizaje implícito y consiste en una disminución de la respuesta a un estímulo inocuo que se presenta repetidamente." },
+            { pregunta: "El sueño REM es más predominante durante la primera mitad de la noche.", respuesta: false, justificacion: "Falso. Los ciclos de sueño duran unos 90 minutos. El sueño de ondas lentas predomina en la primera mitad de la noche, mientras que los períodos de sueño REM se hacen progresivamente más largos y frecuentes en la segunda mitad." },
+            { pregunta: "La memoria semántica se refiere al recuerdo de eventos autobiográficos personales.", respuesta: false, justificacion: "Falso. La memoria semántica es el conocimiento de hechos y conceptos generales sobre el mundo (p. ej., 'París es la capital de Francia'). El recuerdo de eventos personales es la memoria episódica." },
+            { pregunta: "La amígdala es crucial para el componente emocional de los recuerdos.", respuesta: true, justificacion: "Verdadero. La amígdala modula la consolidación de la memoria en otras estructuras como el hipocampo, haciendo que los eventos con una fuerte carga emocional se recuerden de forma más vívida y duradera." },
+            { pregunta: "El proceso homeostático del sueño (Proceso S) se acumula durante el sueño y se disipa durante la vigilia.", respuesta: false, justificacion: "Falso. Es al revés. El Proceso S, que representa la 'presión de sueño', se acumula durante el período de vigilia y se disipa durante el sueño." },
+            { pregunta: "El cerebelo es importante para el aprendizaje por condicionamiento clásico de respuestas motoras.", respuesta: true, justificacion: "Verdadero. El cerebelo es fundamental para el aprendizaje y la temporización de respuestas motoras condicionadas, como en el condicionamiento del parpadeo." },
+            { pregunta: "La privación total de sueño no tiene efectos negativos en las funciones cognitivas.", respuesta: false, justificacion: "Falso. La falta de sueño afecta gravemente a funciones cognitivas como la atención, la memoria de trabajo, la toma de decisiones y el tiempo de reacción." },
+            { pregunta: "El 'priming' o facilitación es un tipo de memoria explícita.", respuesta: false, justificacion: "Falso. El priming es un fenómeno de memoria implícita en el que la exposición a un estímulo influye en la respuesta a un estímulo posterior, a menudo sin conciencia de la conexión." },
+            { pregunta: "La consolidación de la memoria es un proceso que ocurre instantáneamente.", respuesta: false, justificacion: "Falso. La consolidación es un proceso que lleva tiempo (desde minutos hasta años) y que estabiliza una traza de memoria después de su adquisición inicial, haciéndola resistente a la interferencia." },
+            { pregunta: "Los ritmos circadianos persisten incluso en ausencia de señales ambientales como la luz y la oscuridad.", respuesta: true, justificacion: "Verdadero. Los ritmos circadianos son endógenos, generados internamente por el reloj biológico. Las señales ambientales (Zeitgebers) solo sirven para sincronizar este reloj interno con el ciclo de 24 horas del entorno." },
+            { pregunta: "Soñar solo ocurre durante la fase de sueño REM.", respuesta: false, justificacion: "Falso. Aunque los sueños más vívidos y narrativos ocurren en la fase REM, también se puede soñar en las fases no-REM, aunque estos sueños suelen ser más fragmentados y menos emocionales." },
+            { pregunta: "La adenosina es un neurotransmisor que se acumula durante la vigilia y promueve el sueño.", respuesta: true, justificacion: "Verdadero. La adenosina se acumula en el cerebro como un subproducto del metabolismo energético durante el día. Actúa como una señal de 'cansancio', aumentando la presión de sueño. La cafeína bloquea sus receptores." }
+        ]
+    };
+
+    // --- ESTADO DE LA APLICACIÓN ---
+    let modulosSeleccionados = [];
+    let preguntasQuiz = [];
+    let preguntaActualIndex = 0;
+    let puntuacion = 0;
+    let lecturaAutomaticaActivada = true;
+    const synth = window.speechSynthesis;
+    let utterance;
+    let btnSiguiente;
+
+    // --- SELECTORES DEL DOM ---
+    const pantallaInicio = document.getElementById('pantalla-inicio');
+    const pantallaQuiz = document.getElementById('pantalla-quiz');
+    const pantallaFinal = document.getElementById('pantalla-final');
+    const listaModulosEl = document.getElementById('lista-modulos-seleccion');
+    const btnIniciar = document.getElementById('btn-iniciar');
+    const errorSeleccion = document.getElementById('error-seleccion');
+    const contadorPreguntaEl = document.getElementById('contador-pregunta');
+    const puntuacionActualEl = document.getElementById('puntuacion-actual');
+    const textoPreguntaEl = document.getElementById('texto-pregunta');
+    const btnLeerPregunta = document.getElementById('btn-leer-pregunta');
+    const iconoVolumenOn = document.getElementById('icono-volumen-on');
+    const iconoVolumenOff = document.getElementById('icono-volumen-off');
+    const btnVerdadero = document.getElementById('btn-verdadero');
+    const btnFalso = document.getElementById('btn-falso');
+    const feedbackEl = document.getElementById('feedback');
+    const mensajeFinalEl = document.getElementById('mensaje-final');
+    const puntuacionFinalTextoEl = document.getElementById('puntuacion-final-texto');
+    const btnReiniciar = document.getElementById('btn-reiniciar');
+    
+    const modalResumen = document.getElementById('modal-resumen');
+    const cerrarModalBtn = document.querySelector('.cerrar-modal');
+    const resumenTituloEl = document.getElementById('resumen-titulo');
+    const resumenTextoEl = document.getElementById('resumen-texto');
+    const ttsPlayBtn = document.getElementById('tts-play');
+    const ttsPauseBtn = document.getElementById('tts-pause');
+    const ttsStopBtn = document.getElementById('tts-stop');
+    const ttsProgresoEl = document.getElementById('tts-progreso');
+
+    // --- FUNCIONES ---
+
+    function popularModulos() {
+        listaModulosEl.innerHTML = '';
+        const modulosInfo = [
+            "Estructura y Función Neuronal", "Potenciales de Membrana", "Sinapsis y Comunicación",
+            "Desarrollo del SN", "Anatomía del SN", "Sistemas Sensoriales I", "Sistemas Sensoriales II",
+            "Control Motor y SNA", "Hipotálamo y Homeostasis", "Emociones y S. Límbico", "Aprendizaje, Memoria y Sueño"
+        ];
+        modulosInfo.forEach((titulo, index) => {
+            const moduloId = index + 1;
+            const li = document.createElement('li');
+            li.className = 'modulo-item';
+            li.dataset.modulo = moduloId;
+            li.innerHTML = `
+                <div class="contenido-modulo">
+                    <span class="modulo-numero">${moduloId}</span>
+                    <span class="modulo-texto">${titulo}</span>
+                </div>
+                <button class="boton-estudiar" data-modulo="${moduloId}">Estudiar</button>
+            `;
+            listaModulosEl.appendChild(li);
+        });
+
+        // Add event listeners after creation
+        document.querySelectorAll('.modulo-item .contenido-modulo').forEach(div => {
+            div.parentElement.addEventListener('click', (e) => {
+                if(e.target.classList.contains('boton-estudiar')) return;
+                const item = e.currentTarget;
+                item.classList.toggle('seleccionado');
+            });
+        });
+        document.querySelectorAll('.boton-estudiar').forEach(boton => {
+            boton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const moduloId = e.target.dataset.modulo;
+                const resumen = resumenes[moduloId];
+                resumenTituloEl.textContent = resumen.titulo;
+                resumenTextoEl.querySelector('p').textContent = resumen.contenido;
+                modalResumen.style.display = 'flex';
+            });
+        });
+    }
+
+    function leerEnVozAlta(texto, onEndCallback, onBoundaryCallback) {
+        speechSynthesis.cancel();
+        if ('speechSynthesis' in window && lecturaAutomaticaActivada) {
+            utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.9;
+            if (onEndCallback) utterance.onend = onEndCallback;
+            if (onBoundaryCallback) {
+                 utterance.onboundary = (event) => {
+                    if (event.name === 'word') {
+                        const progress = (event.charIndex + event.charLength) / texto.length * 100;
+                        onBoundaryCallback(progress);
+                    }
+                };
+            }
+            speechSynthesis.speak(utterance);
+        } else {
+            if (onEndCallback) onEndCallback();
+        }
+    }
+    
+    function toggleLecturaAutomatica() {
+        lecturaAutomaticaActivada = !lecturaAutomaticaActivada;
+        btnLeerPregunta.classList.toggle('activo', lecturaAutomaticaActivada);
+        iconoVolumenOn.style.display = lecturaAutomaticaActivada ? 'block' : 'none';
+        iconoVolumenOff.style.display = lecturaAutomaticaActivada ? 'none' : 'block';
+        if (!lecturaAutomaticaActivada) {
+            speechSynthesis.cancel();
+        }
+    }
+
+    function iniciarJuego() {
+        const modulosLiSeleccionados = document.querySelectorAll('#lista-modulos-seleccion .modulo-item.seleccionado');
+        if (modulosLiSeleccionados.length === 0) {
+            errorSeleccion.style.display = 'block';
+            return;
+        }
+        errorSeleccion.style.display = 'none';
+        
+        preguntasSeleccionadas = [];
+        modulosLiSeleccionados.forEach(li => {
+            preguntasSeleccionadas.push(...preguntas[li.dataset.modulo]);
+        });
+        preguntasSeleccionadas.sort(() => Math.random() - 0.5);
+
+        puntuacion = 0;
+        preguntaActualIndex = 0;
+        
+        pantallaInicio.style.display = 'none';
+        pantallaQuiz.style.display = 'block';
+        mostrarSiguientePregunta();
+    }
+
+    function mostrarSiguientePregunta() {
+        if (preguntaActualIndex >= preguntasSeleccionadas.length) {
+            mostrarPantallaFinal();
+            return;
+        }
+        limpiarFeedback();
+        const preguntaActual = preguntasSeleccionadas[preguntaActualIndex];
+        contadorPreguntaEl.textContent = `Pregunta ${preguntaActualIndex + 1} de ${preguntasSeleccionadas.length}`;
+        puntuacionActualEl.textContent = `Puntuación: ${puntuacion}`;
+        textoPreguntaEl.textContent = preguntaActual.pregunta;
+        btnVerdadero.disabled = false;
+        btnFalso.disabled = false;
+        btnVerdadero.className = 'btn';
+        btnFalso.className = 'btn';
+        leerEnVozAlta(preguntaActual.pregunta);
+    }
+
+    function seleccionarRespuesta(respuestaUsuario) {
+        btnVerdadero.disabled = true;
+        btnFalso.disabled = true;
+        const preguntaActual = preguntasSeleccionadas[preguntaActualIndex];
+        const esCorrecto = respuestaUsuario === preguntaActual.respuesta;
+        const botonSeleccionado = respuestaUsuario ? btnVerdadero : btnFalso;
+        const botonCorrecto = preguntaActual.respuesta ? btnVerdadero : btnFalso;
+        let textoFeedback;
+
+        if (esCorrecto) {
+            puntuacion++;
+            botonSeleccionado.classList.add('correcto');
+            textoFeedback = `¡Correcto! ${preguntaActual.justificacion}`;
+            feedbackEl.innerHTML = `<h3>¡Correcto!</h3><p class="justificacion">${preguntaActual.justificacion}</p>`;
+            feedbackEl.className = 'correcto';
+        } else {
+            const respuestaCorrectaTexto = preguntaActual.respuesta ? 'Verdadero' : 'Falso';
+            botonSeleccionado.classList.add('incorrecto');
+            botonCorrecto.classList.add('correcto');
+            textoFeedback = `Incorrecto. La respuesta correcta era ${respuestaCorrectaTexto}. ${preguntaActual.justificacion}`;
+            feedbackEl.innerHTML = `<h3>Incorrecto</h3><p>La respuesta correcta era: <strong>${respuestaCorrectaTexto}</strong></p><p class="justificacion">${preguntaActual.justificacion}</p>`;
+            feedbackEl.className = 'incorrecto';
+        }
+        
+        puntuacionActualEl.textContent = `Puntuación: ${puntuacion}`;
+        preguntaActualIndex++;
+        leerEnVozAlta(textoFeedback, crearBotonSiguiente);
+    }
+    
+    function crearBotonSiguiente() {
+        btnSiguiente = document.createElement('button');
+        btnSiguiente.id = 'btn-siguiente';
+        btnSiguiente.className = 'btn';
+        btnSiguiente.textContent = (preguntaActualIndex >= preguntasSeleccionadas.length) ? 'Ver Resultados' : 'Siguiente Pregunta';
+        feedbackEl.appendChild(btnSiguiente);
+        btnSiguiente.addEventListener('click', mostrarSiguientePregunta);
+    }
+
+    function limpiarFeedback() {
+        feedbackEl.innerHTML = '';
+        feedbackEl.className = '';
+    }
+
+    function mostrarPantallaFinal() {
+        pantallaQuiz.style.display = 'none';
+        pantallaFinal.style.display = 'block';
+        const total = preguntasSeleccionadas.length;
+        const porcentaje = total > 0 ? Math.round((puntuacion / total) * 100) : 0;
+        puntuacionFinalTextoEl.textContent = `Tu puntuación final es: ${puntuacion} / ${total} (${porcentaje}%)`;
+        let mensaje;
+        if (porcentaje === 100) mensaje = '¡Felicidades! ¡Dominio total!';
+        else if (porcentaje >= 70) mensaje = '¡Muy buen trabajo!';
+        else if (porcentaje >= 50) mensaje = '¡Buen intento! Estás en camino.';
+        else mensaje = 'Sigue estudiando para fortalecer tus conocimientos.';
+        mensajeFinalEl.textContent = mensaje;
+        leerEnVozAlta(`Fin del juego. Tu puntuación final es ${puntuacion} de ${total}. ${mensaje}`);
+    }
+
+    function reiniciarJuego() {
+        speechSynthesis.cancel();
+        pantallaFinal.style.display = 'none';
+        pantallaInicio.style.display = 'block';
+        document.querySelectorAll('#lista-modulos-seleccion .modulo-item.seleccionado').forEach(li => li.classList.remove('seleccionado'));
+    }
+
+    // --- Event Listeners del Modal ---
+    function cerrarModal() {
+        synth.cancel();
+        modalResumen.style.display = 'none';
+        ttsProgresoEl.value = 0;
+    }
+    cerrarModalBtn.addEventListener('click', cerrarModal);
+    window.addEventListener('click', (e) => { if (e.target == modalResumen) cerrarModal(); });
+    ttsPlayBtn.addEventListener('click', () => {
+        if (synth.paused && utterance) {
+            synth.resume();
+        } else {
+            const texto = resumenTextoEl.querySelector('p').textContent;
+            leerEnVozAlta(texto, () => { ttsProgresoEl.value = 0; }, (progress) => { ttsProgresoEl.value = progress; });
+        }
+    });
+    ttsPauseBtn.addEventListener('click', () => synth.pause());
+    ttsStopBtn.addEventListener('click', () => {
+        synth.cancel();
+        ttsProgresoEl.value = 0;
+    });
+
+    // --- Event Listeners Principales ---
+    btnIniciar.addEventListener('click', iniciarJuego);
+    btnVerdadero.addEventListener('click', () => seleccionarRespuesta(true));
+    btnFalso.addEventListener('click', () => seleccionarRespuesta(false));
+    btnReiniciar.addEventListener('click', reiniciarJuego);
+    btnLeerPregunta.addEventListener('click', toggleLecturaAutomatica);
+    
+    // Inicializar la aplicación
+    popularModulos();
+    toggleLecturaAutomatica(); // Para setear el estado inicial de los iconos
+});
+</script>
+</body>
+</html>
